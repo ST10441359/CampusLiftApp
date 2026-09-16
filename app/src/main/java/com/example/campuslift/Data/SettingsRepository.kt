@@ -1,6 +1,7 @@
 package com.example.campuslift.Data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.map
 
 /**
  * CampusLift settings storage.
- * Saves user preferences to disk so they survive app restarts.
+ * Saves user preferences to disk per-user (keyed by Firebase UID).
  *
  * Author: Keshvir Parthab (ST10451537)
  */
@@ -18,43 +19,44 @@ import kotlinx.coroutines.flow.map
 // Attach DataStore to the application context (singleton)
 private val Context.dataStore by preferencesDataStore(name = "campuslift_settings")
 
-class SettingsRepository(private val context: Context) {
+class SettingsRepository(private val context: Context, private val userKey: String) {
 
-    // Keys for each preference
-    private object Keys {
-        val DARK_MODE = booleanPreferencesKey("dark_mode")
-        val BIOMETRIC = booleanPreferencesKey("biometric_enabled")
-        val NOTIFICATIONS = booleanPreferencesKey("notifications_enabled")
-        val LANGUAGE = stringPreferencesKey("language") // "en" or "zu"
-    }
+    private val TAG = "SettingsRepository"
+
+    // Each user's keys are prefixed with their UID
+    private fun key(name: String) = "${userKey}_$name"
 
     // -------- Reads (Flows) --------
     val darkMode: Flow<Boolean> = context.dataStore.data
-        .map { it[Keys.DARK_MODE] ?: false }
+        .map { it[booleanPreferencesKey(key("dark_mode"))] ?: false }
 
     val biometricEnabled: Flow<Boolean> = context.dataStore.data
-        .map { it[Keys.BIOMETRIC] ?: true }
+        .map { it[booleanPreferencesKey(key("biometric_enabled"))] ?: true }
 
     val notificationsEnabled: Flow<Boolean> = context.dataStore.data
-        .map { it[Keys.NOTIFICATIONS] ?: true }
+        .map { it[booleanPreferencesKey(key("notifications_enabled"))] ?: true }
 
     val language: Flow<String> = context.dataStore.data
-        .map { it[Keys.LANGUAGE] ?: "en" }
+        .map { it[stringPreferencesKey(key("language"))] ?: "en" }
 
     // -------- Writes (suspend functions) --------
     suspend fun setDarkMode(enabled: Boolean) {
-        context.dataStore.edit { it[Keys.DARK_MODE] = enabled }
+        Log.d(TAG, "[$userKey] setDarkMode: $enabled")
+        context.dataStore.edit { it[booleanPreferencesKey(key("dark_mode"))] = enabled }
     }
 
     suspend fun setBiometric(enabled: Boolean) {
-        context.dataStore.edit { it[Keys.BIOMETRIC] = enabled }
+        Log.d(TAG, "[$userKey] setBiometric: $enabled")
+        context.dataStore.edit { it[booleanPreferencesKey(key("biometric_enabled"))] = enabled }
     }
 
     suspend fun setNotifications(enabled: Boolean) {
-        context.dataStore.edit { it[Keys.NOTIFICATIONS] = enabled }
+        Log.d(TAG, "[$userKey] setNotifications: $enabled")
+        context.dataStore.edit { it[booleanPreferencesKey(key("notifications_enabled"))] = enabled }
     }
 
     suspend fun setLanguage(lang: String) {
-        context.dataStore.edit { it[Keys.LANGUAGE] = lang }
+        Log.d(TAG, "[$userKey] setLanguage: $lang")
+        context.dataStore.edit { it[stringPreferencesKey(key("language"))] = lang }
     }
 }

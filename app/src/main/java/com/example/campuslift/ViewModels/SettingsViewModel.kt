@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.campuslift.Data.SettingsRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -13,13 +14,24 @@ import kotlinx.coroutines.launch
 /**
  * CampusLift Settings ViewModel.
  * Bridges the Settings screen with the DataStore-based SettingsRepository.
+ * Settings are PER-USER (keyed by Firebase UID).
  *
  * Author: Keshvir Parthab (ST10451537)
  */
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = SettingsRepository(application)
     private val TAG = "SettingsViewModel"
+
+    // Get the current user's UID. If not signed in yet, fall back to "guest".
+    // NOTE: FirebaseAuth.currentUser should be available by the time the app navigates
+    // to Home (since SSO always precedes it), so this is usually correct.
+    private val currentUserId: String
+        get() = FirebaseAuth.getInstance().currentUser?.uid ?: "guest"
+
+    private val repository: SettingsRepository by lazy {
+        Log.d(TAG, "Creating repository for user: $currentUserId")
+        SettingsRepository(getApplication(), currentUserId)
+    }
 
     // Expose settings as StateFlows so Compose can observe them
     val darkMode: StateFlow<Boolean> = repository.darkMode
@@ -36,22 +48,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     // --- Setters ---
     fun setDarkMode(enabled: Boolean) {
-        Log.d(TAG, "setDarkMode: $enabled")
         viewModelScope.launch { repository.setDarkMode(enabled) }
     }
 
     fun setBiometric(enabled: Boolean) {
-        Log.d(TAG, "setBiometric: $enabled")
         viewModelScope.launch { repository.setBiometric(enabled) }
     }
 
     fun setNotifications(enabled: Boolean) {
-        Log.d(TAG, "setNotifications: $enabled")
         viewModelScope.launch { repository.setNotifications(enabled) }
     }
 
     fun setLanguage(lang: String) {
-        Log.d(TAG, "setLanguage: $lang")
         viewModelScope.launch { repository.setLanguage(lang) }
     }
 }

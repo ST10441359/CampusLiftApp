@@ -9,11 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,13 +21,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.CampusLiftTopBar
+import com.example.campuslift.Components.LanguageDropdown
 import com.example.campuslift.Components.SettingsClickRow
 import com.example.campuslift.Components.SettingsToggleRow
 import com.example.campuslift.ViewModels.SettingsViewModel
 
 /**
  * CampusLift Settings screen.
- * Preferences are read from / written to DataStore via SettingsViewModel.
+ * Preferences read from / written to DataStore via SettingsViewModel.
+ * Works in both light and dark mode.
  *
  * Author: Keshvir Parthab (ST10451537)
  */
@@ -41,13 +43,10 @@ fun SettingsScreen(
     val TAG = "SettingsScreen"
     Log.d(TAG, "SettingsScreen composed")
 
-    // Observe persisted values
     val darkMode by settingsViewModel.darkMode.collectAsStateWithLifecycle()
     val biometric by settingsViewModel.biometricEnabled.collectAsStateWithLifecycle()
     val notifications by settingsViewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val language by settingsViewModel.language.collectAsStateWithLifecycle()
-
-    val languageLabel = if (language == "zu") "isiZulu" else "English"
 
     val emergencyContact = "+27 83 456 7890"
     val vehicle = "Toyota Etios"
@@ -72,18 +71,18 @@ fun SettingsScreen(
                 text = "Nomvula Khumalo",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A237E)
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = "nomvula@ukzn.ac.za",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = "⭐ 4.9   |   23 Trips   |   Verified Student",
                 fontSize = 13.sp,
-                color = Color(0xFFFF6B35)
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -91,63 +90,68 @@ fun SettingsScreen(
                 text = "PREFERENCES",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- Settings rows (now wired to DataStore) ---
+            // --- Language (now a dropdown) ---
             SettingsClickRow(
                 label = "Language",
-                value = languageLabel,
-                onClick = {
-                    val newLang = if (language == "zu") "en" else "zu"
-                    Log.d(TAG, "Language tapped, switching to $newLang")
-                    settingsViewModel.setLanguage(newLang)
+                value = "",
+                onClick = { /* handled by dropdown itself */ },
+                trailingContent = {
+                    LanguageDropdown(
+                        currentLanguage = language,
+                        onLanguageSelected = { newLang ->
+                            Log.d(TAG, "Language changed to $newLang")
+                            settingsViewModel.setLanguage(newLang)
+                        }
+                    )
                 }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsToggleRow(
                 label = "Dark Mode",
                 checked = darkMode,
                 onCheckedChange = { settingsViewModel.setDarkMode(it) }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsToggleRow(
                 label = "Biometric Login",
                 checked = biometric,
                 onCheckedChange = { settingsViewModel.setBiometric(it) }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsToggleRow(
                 label = "Notifications",
                 checked = notifications,
                 onCheckedChange = { settingsViewModel.setNotifications(it) }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsClickRow(
                 label = "Emergency Contact",
                 value = emergencyContact,
                 onClick = { Log.d(TAG, "Emergency Contact tapped") }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsClickRow(
                 label = "My Vehicle",
                 value = vehicle,
                 onClick = { Log.d(TAG, "My Vehicle tapped") }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsClickRow(
                 label = "Payment Methods",
                 value = payment,
                 onClick = { Log.d(TAG, "Payment tapped") }
             )
-            Divider(color = Color(0xFFEEEEEE))
+            Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
             SettingsClickRow(
                 label = "Privacy & Safety",
