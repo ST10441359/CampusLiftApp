@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "765420710956",
+    "project_id": "campuslift-86ed4",
+    "storage_bucket": "campuslift-86ed4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:765420710956:android:9ba932aa78707969c3b589",
+        "android_client_info": {
+          "package_name": "com.example.campuslift"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "765420710956-4svedjdt2bncms9fhr6e7di1f21fq7fl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.campuslift",
+            "certificate_hash": "eea1fe26058f08d7e445ba5fb5d7ac42b9629ea0"
+          }
+        },
+        {
+          "client_id": "765420710956-4n1uao993i78bv58cl4hcfvpkuu52u0u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6vf1KXb9pJxaya5QKGZG_fwsb11A1Xys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "765420710956-4n1uao993i78bv58cl4hcfvpkuu52u0u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
