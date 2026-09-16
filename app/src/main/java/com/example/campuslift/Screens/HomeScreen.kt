@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 fun HomeScreen(
     onSignOut: () -> Unit,
     onNavigateToCreateRide: () -> Unit,
+    onNavigateToSearchRide: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
     Column(
@@ -31,11 +32,17 @@ fun HomeScreen(
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(Modifier.height(8.dp))
+
         Button(onClick = onNavigateToCreateRide) {
             Text("Create a Ride")
         }
-
         Spacer(Modifier.height(12.dp))
+
+        Button(onClick = onNavigateToSearchRide) {
+            Text("Search Rides")
+        }
+        Spacer(Modifier.height(12.dp))
+
         Text(
             text = "Ride features coming soon.",
             style = MaterialTheme.typography.bodyMedium
