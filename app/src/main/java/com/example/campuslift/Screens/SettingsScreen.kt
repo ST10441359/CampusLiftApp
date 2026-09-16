@@ -32,7 +32,8 @@ import com.example.campuslift.Components.SettingsToggleRow
  */
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onSignOut: () -> Unit = {}
 ) {
 
     // --- State (for now just local, we'll persist later) ---
@@ -148,7 +149,7 @@ fun SettingsScreen(
             // --- Sign out ---
             CampusLiftButton(
                 text = "Sign Out",
-                onClick = { /* TODO: hook up to auth sign-out */ }
+                onClick = onSignOut
             )
 
             Spacer(modifier = Modifier.height(24.dp))
