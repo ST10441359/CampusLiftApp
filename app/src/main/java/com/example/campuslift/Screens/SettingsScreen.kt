@@ -1,5 +1,6 @@
 package com.example.campuslift.Screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,37 +12,43 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.SettingsClickRow
 import com.example.campuslift.Components.SettingsToggleRow
+import com.example.campuslift.ViewModels.SettingsViewModel
 
 /**
  * CampusLift Settings screen.
- * Displays all user preferences with toggle switches and clickable rows.
+ * Preferences are read from / written to DataStore via SettingsViewModel.
  *
  * Author: Keshvir Parthab (ST10451537)
  */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit = {},
-    onSignOut: () -> Unit = {}
+    onSignOut: () -> Unit = {},
+    settingsViewModel: SettingsViewModel = viewModel()
 ) {
 
-    // --- State (for now just local, we'll persist later) ---
-    var darkMode by remember { mutableStateOf(false) }
-    var biometric by remember { mutableStateOf(true) }
-    var notifications by remember { mutableStateOf(true) }
+    val TAG = "SettingsScreen"
+    Log.d(TAG, "SettingsScreen composed")
 
-    val language = "English / isiZulu"
+    // Observe persisted values
+    val darkMode by settingsViewModel.darkMode.collectAsStateWithLifecycle()
+    val biometric by settingsViewModel.biometricEnabled.collectAsStateWithLifecycle()
+    val notifications by settingsViewModel.notificationsEnabled.collectAsStateWithLifecycle()
+    val language by settingsViewModel.language.collectAsStateWithLifecycle()
+
+    val languageLabel = if (language == "zu") "isiZulu" else "English"
+
     val emergencyContact = "+27 83 456 7890"
     val vehicle = "Toyota Etios"
     val payment = "Standard Bank"
@@ -88,65 +95,68 @@ fun SettingsScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- Settings rows ---
+            // --- Settings rows (now wired to DataStore) ---
             SettingsClickRow(
                 label = "Language",
-                value = language,
-                onClick = { /* TODO: open language picker */ }
+                value = languageLabel,
+                onClick = {
+                    val newLang = if (language == "zu") "en" else "zu"
+                    Log.d(TAG, "Language tapped, switching to $newLang")
+                    settingsViewModel.setLanguage(newLang)
+                }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsToggleRow(
                 label = "Dark Mode",
                 checked = darkMode,
-                onCheckedChange = { darkMode = it }
+                onCheckedChange = { settingsViewModel.setDarkMode(it) }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsToggleRow(
                 label = "Biometric Login",
                 checked = biometric,
-                onCheckedChange = { biometric = it }
+                onCheckedChange = { settingsViewModel.setBiometric(it) }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsToggleRow(
                 label = "Notifications",
                 checked = notifications,
-                onCheckedChange = { notifications = it }
+                onCheckedChange = { settingsViewModel.setNotifications(it) }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsClickRow(
                 label = "Emergency Contact",
                 value = emergencyContact,
-                onClick = { /* TODO: open contact editor */ }
+                onClick = { Log.d(TAG, "Emergency Contact tapped") }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsClickRow(
                 label = "My Vehicle",
                 value = vehicle,
-                onClick = { /* TODO: open vehicle editor */ }
+                onClick = { Log.d(TAG, "My Vehicle tapped") }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsClickRow(
                 label = "Payment Methods",
                 value = payment,
-                onClick = { /* TODO: open payment editor */ }
+                onClick = { Log.d(TAG, "Payment tapped") }
             )
             Divider(color = Color(0xFFEEEEEE))
 
             SettingsClickRow(
                 label = "Privacy & Safety",
                 value = "",
-                onClick = { /* TODO: open privacy page */ }
+                onClick = { Log.d(TAG, "Privacy tapped") }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- Sign out ---
             CampusLiftButton(
                 text = "Sign Out",
                 onClick = onSignOut
