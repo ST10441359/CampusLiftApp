@@ -65,7 +65,8 @@ fun AppNav() {
                         popUpTo("home") { inclusive = true }
                     }
                 },
-                onNavigateToSettings = { navController.navigate("settings") }
+                onNavigateToSettings = { navController.navigate("settings") },
+                onNavigateToCreateRide = { navController.navigate("createRide") }
             )
         }
 
