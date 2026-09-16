@@ -10,9 +10,14 @@ import androidx.compose.ui.unit.dp
 /**
  * Placeholder Home screen.
  * Will be replaced by Ziyaad's ride functionality in a future phase.
+ *
+ * Keshvir added: onNavigateToSettings callback so the user can reach Settings.
  */
 @Composable
-fun HomeScreen(onSignOut: () -> Unit) {
+fun HomeScreen(
+    onSignOut: () -> Unit,
+    onNavigateToSettings: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,6 +35,13 @@ fun HomeScreen(onSignOut: () -> Unit) {
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(Modifier.height(24.dp))
+
+        Button(onClick = onNavigateToSettings) {
+            Text("Open Settings")
+        }
+
+        Spacer(Modifier.height(12.dp))
+
         Button(onClick = onSignOut) {
             Text("Sign Out")
         }

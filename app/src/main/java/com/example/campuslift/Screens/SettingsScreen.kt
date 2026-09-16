@@ -31,7 +31,9 @@ import com.example.campuslift.Components.SettingsToggleRow
  * Author: Keshvir Parthab (ST10451537)
  */
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    onBack: () -> Unit = {}
+) {
 
     // --- State (for now just local, we'll persist later) ---
     var darkMode by remember { mutableStateOf(false) }
@@ -45,7 +47,10 @@ fun SettingsScreen() {
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        CampusLiftTopBar(title = "Profile / Settings")
+        CampusLiftTopBar(
+            title = "Profile / Settings",
+            onBack = onBack
+        )
 
         Column(
             modifier = Modifier

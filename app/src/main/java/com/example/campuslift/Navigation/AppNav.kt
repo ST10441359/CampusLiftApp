@@ -11,11 +11,12 @@ import com.example.campuslift.Auth.AuthState
 import com.example.campuslift.Screens.HomeScreen
 import com.example.campuslift.Screens.LoginScreen
 import com.example.campuslift.Screens.RegisterScreen
+import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 
 /**
  * Root navigation graph for CampusLift.
- * Handles transitions between auth screens and the home screen.
+ * Handles transitions between auth screens, home, and settings.
  */
 @Composable
 fun AppNav() {
@@ -62,7 +63,14 @@ fun AppNav() {
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
-                }
+                },
+                onNavigateToSettings = { navController.navigate("settings") }
+            )
+        }
+
+        composable("settings") {
+            SettingsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }
