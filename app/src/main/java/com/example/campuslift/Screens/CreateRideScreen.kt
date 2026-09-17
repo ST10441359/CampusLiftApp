@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.campuslift.Components.ValidationUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,20 +118,17 @@ fun CreateRideScreen(
                     val priceValue = pricePerSeat.toDoubleOrNull()
                     val seatsValue = totalSeats.toIntOrNull()
 
-                    when {
-                        fromLocation.isBlank() || toLocation.isBlank() || eventTime.isBlank() -> {
-                            errorMessage = "Please fill in all required fields."
-                        }
-                        priceValue == null || priceValue < 0 -> {
-                            errorMessage = "Enter a valid price per seat."
-                        }
-                        seatsValue == null || seatsValue <= 0 -> {
-                            errorMessage = "Enter a valid number of seats."
-                        }
-                        else -> {
-                            successMessage = "Ride created successfully."
-                            onRideCreated()
-                        }
+                    val validationError = ValidationUtils.validateRequired(fromLocation, "Pickup location")
+                        ?: ValidationUtils.validateRequired(toLocation, "Destination")
+                        ?: ValidationUtils.validateRequired(eventTime, "Departure time")
+                        ?: if (priceValue == null || priceValue < 0) "Enter a valid price per seat" else null
+                            ?: if (seatsValue == null || seatsValue <= 0) "Enter a valid number of seats" else null
+
+                    if (validationError != null) {
+                        errorMessage = validationError
+                    } else {
+                        successMessage = "Ride created successfully."
+                        onRideCreated()
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
