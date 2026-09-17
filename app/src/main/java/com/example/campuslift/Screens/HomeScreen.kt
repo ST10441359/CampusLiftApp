@@ -16,9 +16,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreen(
     onSignOut: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     onNavigateToCreateRide: () -> Unit,
     onNavigateToSearchRide: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToMyRides: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -52,7 +53,11 @@ fun HomeScreen(
         Button(onClick = onNavigateToSettings) {
             Text("Open Settings")
         }
+        Spacer(Modifier.height(12.dp))
 
+        Button(onClick = onNavigateToMyRides) {
+            Text("My Rides")
+        }
         Spacer(Modifier.height(12.dp))
 
         Button(onClick = onSignOut) {
