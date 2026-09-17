@@ -79,7 +79,9 @@ fun AppNav() {
             )
         }
         composable("searchRide") {
-            SearchRideScreen()
+            SearchRideScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable("settings") {
