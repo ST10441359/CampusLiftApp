@@ -15,6 +15,7 @@ import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 import com.example.campuslift.Screens.CreateRideScreen
 import com.example.campuslift.Screens.SearchRideScreen
+import com.example.campuslift.Screens.RideDetailsScreen
 
 /**
  * Root navigation graph for CampusLift.
@@ -80,6 +81,13 @@ fun AppNav() {
         }
         composable("searchRide") {
             SearchRideScreen(
+                onBack = { navController.popBackStack() },
+                onRideSelected = { navController.navigate("rideDetails") }
+            )
+        }
+
+        composable("rideDetails") {
+            RideDetailsScreen(
                 onBack = { navController.popBackStack() }
             )
         }

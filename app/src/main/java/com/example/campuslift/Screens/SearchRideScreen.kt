@@ -1,5 +1,6 @@
 package com.example.campuslift.Screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,8 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchRideScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onRideSelected: () -> Unit = {}
 ) {
     var fromLocation by remember { mutableStateOf("") }
     var toLocation by remember { mutableStateOf("") }
@@ -78,7 +80,7 @@ fun SearchRideScreen(
 
             Button(
                 onClick = {
-                    searchResults.value = emptyList()
+                    searchResults.value = listOf("Gateway → UKZN, 08:00")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -90,7 +92,13 @@ fun SearchRideScreen(
             } else {
                 LazyColumn {
                     items(searchResults.value) { result ->
-                        Text(result)
+                        Text(
+                            text = result,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onRideSelected() }
+                                .padding(vertical = 12.dp)
+                        )
                     }
                 }
             }
