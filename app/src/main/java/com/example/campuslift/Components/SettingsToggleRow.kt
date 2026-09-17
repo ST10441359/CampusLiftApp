@@ -3,6 +3,7 @@ package com.example.campuslift.Components
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -15,7 +16,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * CampusLift settings row with a label and a toggle switch.
- * Used on the Settings screen for Dark Mode, Biometric Login, etc.
+ * Uses theme colours so it works in both light and dark mode.
  *
  * Author: Keshvir Parthab (ST10451537)
  */
@@ -35,7 +36,7 @@ fun SettingsToggleRow(
         Text(
             text = label,
             fontSize = 15.sp,
-            color = Color(0xFF1A237E),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f)
         )
         Switch(
@@ -43,7 +44,10 @@ fun SettingsToggleRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFFFF6B35)
+                checkedTrackColor = Color(0xFFFF6B35),
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color(0xFF888888),
+                uncheckedBorderColor = Color.Transparent
             )
         )
     }
