@@ -74,6 +74,7 @@ fun AppNav() {
 
         composable("createRide") {
             CreateRideScreen(
+                onBack = { navController.popBackStack() },
                 onRideCreated = { navController.popBackStack() }
             )
         }
