@@ -6,19 +6,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.campuslift.Components.CampusLiftRideCard
+import com.example.campuslift.Components.CampusLiftTopBar
+import com.example.campuslift.Components.EmptyState
 
 data class MyRideEntry(
     val fromLocation: String,
@@ -27,7 +21,6 @@ data class MyRideEntry(
     val role: String
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyRidesScreen(
     rides: List<MyRideEntry> = listOf(
@@ -38,14 +31,7 @@ fun MyRidesScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("My Rides") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+            CampusLiftTopBar(title = "My Rides", onBack = onBack)
         }
     ) { padding ->
         Column(
@@ -55,28 +41,21 @@ fun MyRidesScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Upcoming", style = MaterialTheme.typography.titleMedium)
-
             if (rides.isEmpty()) {
-                Text("No rides yet.")
+                EmptyState(
+                    title = "No rides yet",
+                    subtitle = "Book or offer a ride to see it here"
+                )
             } else {
                 LazyColumn {
                     items(rides) { ride ->
-                        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                            Text(
-                                text = "${ride.fromLocation} → ${ride.toLocation}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = ride.eventTime,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = ride.role,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-                        HorizontalDivider()
+                        CampusLiftRideCard(
+                            driverName = ride.role,
+                            fromLocation = ride.fromLocation,
+                            toLocation = ride.toLocation,
+                            time = ride.eventTime,
+                            price = ""
+                        )
                     }
                 }
             }

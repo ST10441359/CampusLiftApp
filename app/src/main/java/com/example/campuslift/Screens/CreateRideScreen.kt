@@ -3,19 +3,10 @@ package com.example.campuslift.Screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,9 +14,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.campuslift.Components.CampusLiftButton
+import com.example.campuslift.Components.CampusLiftTextField
+import com.example.campuslift.Components.CampusLiftTopBar
+import com.example.campuslift.Components.ErrorMessage
 import com.example.campuslift.Components.ValidationUtils
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateRideScreen(
     onBack: () -> Unit = {},
@@ -43,14 +37,7 @@ fun CreateRideScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Create a Ride") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+            CampusLiftTopBar(title = "Create a Ride", onBack = onBack)
         }
     ) { padding ->
         Column(
@@ -60,57 +47,52 @@ fun CreateRideScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
+            CampusLiftTextField(
                 value = fromLocation,
                 onValueChange = { fromLocation = it },
-                label = { Text("Pickup location") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Pickup location"
             )
 
-            OutlinedTextField(
+            CampusLiftTextField(
                 value = toLocation,
                 onValueChange = { toLocation = it },
-                label = { Text("Destination") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Destination"
             )
 
-            OutlinedTextField(
+            CampusLiftTextField(
                 value = eventTime,
                 onValueChange = { eventTime = it },
-                label = { Text("Departure time (YYYY-MM-DD HH:MM)") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Departure time (YYYY-MM-DD HH:MM)"
             )
 
-            OutlinedTextField(
+            CampusLiftTextField(
                 value = pricePerSeat,
                 onValueChange = { pricePerSeat = it },
-                label = { Text("Price per seat") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Price per seat"
             )
 
-            OutlinedTextField(
+            CampusLiftTextField(
                 value = totalSeats,
                 onValueChange = { totalSeats = it },
-                label = { Text("Total seats") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Total seats"
             )
 
-            OutlinedTextField(
+            CampusLiftTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Description (optional)") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Description (optional)"
             )
 
             errorMessage?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.error)
+                ErrorMessage(message = it)
             }
 
             successMessage?.let {
                 Text(text = it, color = MaterialTheme.colorScheme.primary)
             }
 
-            Button(
+            CampusLiftButton(
+                text = "Submit",
                 onClick = {
                     errorMessage = null
                     successMessage = null
@@ -130,11 +112,8 @@ fun CreateRideScreen(
                         successMessage = "Ride created successfully."
                         onRideCreated()
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Submit")
-            }
+                }
+            )
         }
     }
 }
