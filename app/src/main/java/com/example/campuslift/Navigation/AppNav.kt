@@ -10,13 +10,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.campuslift.Auth.AuthState
 import com.example.campuslift.Screens.HomeScreen
 import com.example.campuslift.Screens.LoginScreen
+import com.example.campuslift.Screens.MyBookingsScreen
 import com.example.campuslift.Screens.RegisterScreen
 import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 
 /**
  * Root navigation graph for CampusLift.
- * Handles transitions between auth screens, home, and settings.
+ * Handles transitions between auth screens, home, settings, and bookings.
  */
 @Composable
 fun AppNav() {
@@ -64,7 +65,8 @@ fun AppNav() {
                         popUpTo("home") { inclusive = true }
                     }
                 },
-                onNavigateToSettings = { navController.navigate("settings") }
+                onNavigateToSettings = { navController.navigate("settings") },
+                onNavigateToBookings = { navController.navigate("bookings") }  // NEW
             )
         }
 
@@ -77,6 +79,11 @@ fun AppNav() {
                         popUpTo("home") { inclusive = true }
                     }
                 }
+            )
+        }
+        composable("bookings") {
+            MyBookingsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

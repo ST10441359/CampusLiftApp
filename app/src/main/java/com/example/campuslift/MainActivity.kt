@@ -10,13 +10,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.campuslift.Auth.AuthState
 import com.example.campuslift.Navigation.AppNav
+import com.example.campuslift.ViewModels.AuthViewModel
 import com.example.campuslift.ViewModels.SettingsViewModel
+import com.example.campuslift.ViewModels.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
@@ -24,13 +29,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CampusLiftApp()
+            CampusLiftRoot()
         }
     }
 }
 
+/**
+ * Root composable.
+ * - Applies dark/light theme from user settings
+ * - Runs the SyncObserver so users get synced to the API after login
+ * - Hosts the AppNav navigation graph
+ */
 @Composable
-fun CampusLiftApp() {
+fun CampusLiftRoot() {
+
+    // ---- Sync observer (Suvan's API integration) ----
+    SyncObserver()
+
+    // ---- Theme switching (Keshvir's settings integration) ----
     val currentUid = rememberAuthUid()
     val settingsViewModel: SettingsViewModel = viewModel(key = "settings_$currentUid")
     val darkModeEnabled by settingsViewModel.darkMode.collectAsStateWithLifecycle()
@@ -63,6 +79,29 @@ fun CampusLiftApp() {
     }
 }
 
+/**
+ * Watches the Firebase auth state and syncs the user with the API after login.
+ * Added by Suvan (original author).
+ */
+@Composable
+private fun SyncObserver(
+    authVm: AuthViewModel = viewModel(),
+    userVm: UserViewModel = viewModel()
+) {
+    val authState by authVm.authState.collectAsState()
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Authenticated) {
+            userVm.syncAfterLogin()
+        }
+    }
+}
+
+/**
+ * Returns the current Firebase UID as a Compose state.
+ * Re-emits whenever the user signs in or out.
+ * Added by Keshvir (for per-user settings).
+ */
 @Composable
 private fun rememberAuthUid(): String {
     val auth = FirebaseAuth.getInstance()
