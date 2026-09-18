@@ -31,10 +31,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CampusLiftApp() {
-    // Observe the signed-in user's UID. When this changes, the settings reload.
     val currentUid = rememberAuthUid()
-
-    // Use the UID as a key so a fresh SettingsViewModel is created per user.
     val settingsViewModel: SettingsViewModel = viewModel(key = "settings_$currentUid")
     val darkModeEnabled by settingsViewModel.darkMode.collectAsStateWithLifecycle()
 
@@ -66,10 +63,6 @@ fun CampusLiftApp() {
     }
 }
 
-/**
- * Returns the current Firebase UID as a Compose state.
- * Re-emits whenever the user signs in or out.
- */
 @Composable
 private fun rememberAuthUid(): String {
     val auth = FirebaseAuth.getInstance()

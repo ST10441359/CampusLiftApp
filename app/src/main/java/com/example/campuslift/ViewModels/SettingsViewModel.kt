@@ -22,9 +22,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     private val TAG = "SettingsViewModel"
 
-    // Get the current user's UID. If not signed in yet, fall back to "guest".
-    // NOTE: FirebaseAuth.currentUser should be available by the time the app navigates
-    // to Home (since SSO always precedes it), so this is usually correct.
     private val currentUserId: String
         get() = FirebaseAuth.getInstance().currentUser?.uid ?: "guest"
 
@@ -33,7 +30,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         SettingsRepository(getApplication(), currentUserId)
     }
 
-    // Expose settings as StateFlows so Compose can observe them
+    // Toggles
     val darkMode: StateFlow<Boolean> = repository.darkMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -43,10 +40,23 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val notificationsEnabled: StateFlow<Boolean> = repository.notificationsEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    // Text settings
     val language: StateFlow<String> = repository.language
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
 
-    // --- Setters ---
+    val defaultPickup: StateFlow<String> = repository.defaultPickup
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Gateway")
+
+    val emergencyContact: StateFlow<String> = repository.emergencyContact
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "+27 83 456 7890")
+
+    val vehicle: StateFlow<String> = repository.vehicle
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Toyota Etios")
+
+    val paymentMethod: StateFlow<String> = repository.paymentMethod
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Standard Bank")
+
+    // ---- Setters ----
     fun setDarkMode(enabled: Boolean) {
         viewModelScope.launch { repository.setDarkMode(enabled) }
     }
@@ -61,5 +71,21 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun setLanguage(lang: String) {
         viewModelScope.launch { repository.setLanguage(lang) }
+    }
+
+    fun setDefaultPickup(value: String) {
+        viewModelScope.launch { repository.setDefaultPickup(value) }
+    }
+
+    fun setEmergencyContact(value: String) {
+        viewModelScope.launch { repository.setEmergencyContact(value) }
+    }
+
+    fun setVehicle(value: String) {
+        viewModelScope.launch { repository.setVehicle(value) }
+    }
+
+    fun setPaymentMethod(value: String) {
+        viewModelScope.launch { repository.setPaymentMethod(value) }
     }
 }
