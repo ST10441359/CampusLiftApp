@@ -12,11 +12,13 @@ import androidx.compose.ui.unit.dp
  * Will be replaced by Ziyaad's ride functionality in a future phase.
  *
  * Keshvir added: onNavigateToSettings callback so the user can reach Settings.
+ * Joshua added: onNavigateToBookings for the bookings test screen.
  */
 @Composable
 fun HomeScreen(
     onSignOut: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToBookings: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -35,6 +37,12 @@ fun HomeScreen(
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(Modifier.height(24.dp))
+
+        Button(onClick = onNavigateToBookings) {
+            Text("My Bookings")
+        }
+
+        Spacer(Modifier.height(12.dp))
 
         Button(onClick = onNavigateToSettings) {
             Text("Open Settings")
