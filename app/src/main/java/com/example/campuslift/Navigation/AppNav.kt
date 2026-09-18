@@ -19,6 +19,7 @@ import com.example.campuslift.Screens.MyRidesScreen
 import com.example.campuslift.Screens.RegisterScreen
 import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
+import com.example.campuslift.Screens.BookingDetailsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 
 private val bottomNavRoutes = setOf("home", "myRides", "alerts", "settings")
@@ -101,6 +102,13 @@ fun AppNav() {
 
             composable("myRides") {
                 MyRidesScreen(
+                    onBack = { navController.popBackStack() },
+                    onBookingSelected = { navController.navigate("bookingDetails") }
+                )
+            }
+
+            composable("bookingDetails") {
+                BookingDetailsScreen(
                     onBack = { navController.popBackStack() }
                 )
             }

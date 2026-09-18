@@ -29,7 +29,8 @@ fun MyRidesScreen(
         MyRideEntry("RV", "Ruan vdW", "Westville Campus", "Howard College", "Mon, 19 Aug 2026", "07:00 AM", "Confirmed", "R20"),
         MyRideEntry("KN", "Kefilwe N.", "Howard College", "PMB Campus", "Wed, 21 Aug 2026", "06:45 AM", "Confirmed", "R35")
     ),
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onBookingSelected: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val visibleRides = rides.filter { it.isUpcoming == (selectedTab == 0) }
@@ -71,7 +72,7 @@ fun MyRidesScreen(
                 } else {
                     LazyColumn {
                         items(visibleRides) { ride ->
-                            BookingCard(ride)
+                            BookingCard(ride, onClick = onBookingSelected)
                         }
                     }
                 }

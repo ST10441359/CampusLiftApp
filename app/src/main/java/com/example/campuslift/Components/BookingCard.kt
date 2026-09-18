@@ -1,6 +1,7 @@
 package com.example.campuslift.Components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,7 +39,10 @@ data class MyRideEntry(
 )
 
 @Composable
-fun BookingCard(ride: MyRideEntry) {
+fun BookingCard(
+    ride: MyRideEntry,
+    onClick: () -> Unit = {}
+) {
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -46,6 +50,7 @@ fun BookingCard(ride: MyRideEntry) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
+            .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
