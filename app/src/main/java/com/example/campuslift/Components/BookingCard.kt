@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,31 +25,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/**
- * CampusLift ride card — shows driver, rating, route, time, seats and price.
- * Used on Home/Search results, Bookings, and anywhere else a ride is listed.
- *
- * Author: Keshvir Parthab (ST10451537)
- * Extended by Ziyaad Simjee (ST10406906)
- */
+data class MyRideEntry(
+    val driverInitials: String,
+    val driverName: String,
+    val fromLocation: String,
+    val toLocation: String,
+    val date: String,
+    val time: String,
+    val status: String,
+    val price: String,
+    val isUpcoming: Boolean = true
+)
+
 @Composable
-fun CampusLiftRideCard(
-    driverInitials: String,
-    driverName: String,
-    rating: Double,
-    reviewCount: Int,
-    fromLocation: String,
-    toLocation: String,
-    time: String,
-    seatsAvailable: Int,
-    price: String,
-    modifier: Modifier = Modifier
-) {
+fun BookingCard(ride: MyRideEntry) {
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
     ) {
@@ -61,7 +56,7 @@ fun CampusLiftRideCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = driverInitials,
+                        text = ride.driverInitials,
                         color = Color.White,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
@@ -72,77 +67,78 @@ fun CampusLiftRideCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = driverName,
+                        text = ride.driverName,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A237E)
                     )
                     Text(
-                        text = "★ $rating ($reviewCount)",
+                        text = "${ride.fromLocation} → ${ride.toLocation}",
                         fontSize = 13.sp,
-                        color = Color(0xFFFF9800)
+                        color = Color.DarkGray
                     )
                 }
 
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = price,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E)
-                    )
-                    Text(
-                        text = "per seat",
-                        fontSize = 11.sp,
-                        color = Color.Gray
-                    )
-                }
+                Text(
+                    text = "›",
+                    fontSize = 18.sp,
+                    color = Color.Gray
+                )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = "$fromLocation → $toLocation",
-                fontSize = 14.sp,
-                color = Color.DarkGray
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    color = Color(0xFFF0F0F0),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = time,
-                        fontSize = 12.sp,
-                        color = Color.DarkGray,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+                Text(
+                    text = "📅 ${ride.date}",
+                    fontSize = 13.sp,
+                    color = Color.DarkGray
+                )
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                val seatsColor = when {
-                    seatsAvailable <= 1 -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
-                    else -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                val statusColor = if (ride.status == "Confirmed") {
+                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                } else {
+                    Color(0xFFE3F2FD) to Color(0xFF1565C0)
                 }
 
                 Surface(
-                    color = seatsColor.first,
+                    color = statusColor.first,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = if (seatsAvailable == 1) "1 seat" else "$seatsAvailable seats",
+                        text = "•  ${ride.status}",
                         fontSize = 12.sp,
-                        color = seatsColor.second,
+                        color = statusColor.second,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🕐 ${ride.time}",
+                    fontSize = 13.sp,
+                    color = Color.DarkGray
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Text(
+                    text = ride.price,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1A237E)
+                )
             }
         }
     }

@@ -7,55 +7,72 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.campuslift.Components.CampusLiftRideCard
+import com.example.campuslift.Components.BookingCard
 import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.EmptyState
-
-data class MyRideEntry(
-    val fromLocation: String,
-    val toLocation: String,
-    val eventTime: String,
-    val role: String
-)
+import com.example.campuslift.Components.MyRideEntry
 
 @Composable
 fun MyRidesScreen(
     rides: List<MyRideEntry> = listOf(
-        MyRideEntry("Gateway", "UKZN", "Monday - 08:00", "Booked"),
-        MyRideEntry("Gateway", "Umhlanga", "Tuesday - 09:00", "Driver")
+        MyRideEntry("TM", "Thandiwe M.", "Howard College", "Westville Campus", "Fri, 16 Aug 2026", "07:30 AM", "Driver arriving", "R18"),
+        MyRideEntry("RV", "Ruan vdW", "Westville Campus", "Howard College", "Mon, 19 Aug 2026", "07:00 AM", "Confirmed", "R20"),
+        MyRideEntry("KN", "Kefilwe N.", "Howard College", "PMB Campus", "Wed, 21 Aug 2026", "06:45 AM", "Confirmed", "R35")
     ),
     onBack: () -> Unit = {}
 ) {
+    var selectedTab by remember { mutableStateOf(0) }
+    val visibleRides = rides.filter { it.isUpcoming == (selectedTab == 0) }
+
     Scaffold(
         topBar = {
-            CampusLiftTopBar(title = "My Rides", onBack = onBack)
+            CampusLiftTopBar(title = "Bookings", onBack = onBack)
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (rides.isEmpty()) {
-                EmptyState(
-                    title = "No rides yet",
-                    subtitle = "Book or offer a ride to see it here"
+            TabRow(selectedTabIndex = selectedTab) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Upcoming") }
                 )
-            } else {
-                LazyColumn {
-                    items(rides) { ride ->
-                        CampusLiftRideCard(
-                            driverName = ride.role,
-                            fromLocation = ride.fromLocation,
-                            toLocation = ride.toLocation,
-                            time = ride.eventTime,
-                            price = ""
-                        )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Past") }
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (visibleRides.isEmpty()) {
+                    EmptyState(
+                        title = "No bookings here",
+                        subtitle = "Book or offer a ride to see it here"
+                    )
+                } else {
+                    LazyColumn {
+                        items(visibleRides) { ride ->
+                            BookingCard(ride)
+                        }
                     }
                 }
             }
