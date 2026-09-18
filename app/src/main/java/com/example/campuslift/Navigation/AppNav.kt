@@ -18,7 +18,6 @@ import com.example.campuslift.Screens.LoginScreen
 import com.example.campuslift.Screens.MyRidesScreen
 import com.example.campuslift.Screens.RegisterScreen
 import com.example.campuslift.Screens.RideDetailsScreen
-import com.example.campuslift.Screens.SearchRideScreen
 import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 
@@ -82,8 +81,8 @@ fun AppNav() {
                     },
                     onNavigateToSettings = { navController.navigate("settings") },
                     onNavigateToCreateRide = { navController.navigate("createRide") },
-                    onNavigateToSearchRide = { navController.navigate("searchRide") },
-                    onNavigateToMyRides = { navController.navigate("myRides") }
+                    onNavigateToMyRides = { navController.navigate("myRides") },
+                    onRideSelected = { navController.navigate("rideDetails") }
                 )
             }
 
@@ -91,13 +90,6 @@ fun AppNav() {
                 CreateRideScreen(
                     onBack = { navController.popBackStack() },
                     onRideCreated = { navController.popBackStack() }
-                )
-            }
-
-            composable("searchRide") {
-                SearchRideScreen(
-                    onBack = { navController.popBackStack() },
-                    onRideSelected = { navController.navigate("rideDetails") }
                 )
             }
 
