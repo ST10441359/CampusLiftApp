@@ -1,7 +1,6 @@
 package com.example.campuslift.Screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,19 +13,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,39 +30,63 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.ErrorMessage
+import com.example.campuslift.Components.PassiveBanner
+import com.example.campuslift.ViewModels.BookingViewModel
+import com.example.campuslift.ViewModels.TripViewModel
+import kotlinx.coroutines.delay
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun RideDetailsScreen(
-    driverInitials: String = "TM",
-    driverName: String = "Thandiwe Mthembu",
-    rating: Double = 4.8,
-    tripCount: Int = 47,
-    vehicleInfo: String = "Toyota Etios · HB 42 KZN",
-    pickupLocation: String = "Howard College Main Gate",
-    pickupTime: String = "07:30 AM",
-    dropoffLocation: String = "Westville Campus Library",
-    dropoffTime: String = "~07:55 AM",
-    duration: String = "~25 min · 18 km",
-    totalSeats: Int = 3,
-    availableSeats: Int = 1,
-    pricePerSeat: String = "R18",
+    tripId: String,
     onBack: () -> Unit = {},
-    onRequestSent: () -> Unit = {}
+    onRequestSent: () -> Unit = {},
+    tripViewModel: TripViewModel = viewModel(),
+    bookingViewModel: BookingViewModel = viewModel()
 ) {
-    var seatsLeft by remember { mutableStateOf(availableSeats) }
-    var requestMessage by remember { mutableStateOf<String?>(null) }
-    var isError by remember { mutableStateOf(false) }
+    val trip by tripViewModel.selected.collectAsStateWithLifecycle()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showBanner by remember { mutableStateOf(false) }
 
-    Scaffold { padding ->
+    LaunchedEffect(tripId) {
+        tripViewModel.loadTrip(tripId)
+    }
+
+    LaunchedEffect(showBanner) {
+        if (showBanner) {
+            delay(1500)
+            onRequestSent()
+        }
+    }
+
+    val formattedDate = trip?.eventTime?.let {
+        try {
+            OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy"))
+        } catch (e: Exception) {
+            it
+        }
+    } ?: "No date set"
+
+    val formattedTime = trip?.eventTime?.let {
+        try {
+            OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("hh:mm a"))
+        } catch (e: Exception) {
+            ""
+        }
+    } ?: ""
+
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize()
         ) {
             Column(
                 modifier = Modifier
@@ -87,61 +107,23 @@ fun RideDetailsScreen(
                             .background(Color.White.copy(alpha = 0.2f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = driverInitials,
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(text = "🚗", fontSize = 24.sp)
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = driverName,
+                            text = "${trip?.fromLocation ?: ""} → ${trip?.toLocation ?: ""}",
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "★ $rating · $tripCount trips",
+                            text = "${trip?.seatsRemaining ?: 0} of ${trip?.totalSeats ?: 0} seats available",
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 13.sp
                         )
-                        Text(
-                            text = vehicleInfo,
-                            color = Color.White.copy(alpha = 0.7f),
-                            fontSize = 12.sp
-                        )
-                    }
-
-                    IconButton(onClick = { }) {
-                        Surface(
-                            color = Color.White.copy(alpha = 0.2f),
-                            shape = CircleShape
-                        ) {
-                            Icon(
-                                Icons.Filled.Call,
-                                contentDescription = "Call",
-                                tint = Color.White,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
-                    }
-
-                    IconButton(onClick = { }) {
-                        Surface(
-                            color = Color.White.copy(alpha = 0.2f),
-                            shape = CircleShape
-                        ) {
-                            Icon(
-                                Icons.Filled.Chat,
-                                contentDescription = "Message",
-                                tint = Color.White,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
                     }
                 }
             }
@@ -149,9 +131,23 @@ fun RideDetailsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(16.dp)
             ) {
+                val isFull = (trip?.seatsRemaining ?: 0) <= 0
+
+                Surface(
+                    color = if (isFull) Color(0xFFFFEBEE) else Color(0xFFE3F2FD),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    Text(
+                        text = if (isFull) "•  This ride is full" else "•  ${trip?.seatsRemaining ?: 0} seats available",
+                        fontSize = 13.sp,
+                        color = if (isFull) Color(0xFFD32F2F) else Color(0xFF1565C0),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
+                }
+
                 Card(
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -176,8 +172,8 @@ fun RideDetailsScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(text = pickupLocation, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Pickup · $pickupTime", fontSize = 12.sp, color = Color.Gray)
+                                Text(text = trip?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.Gray)
                             }
                         }
 
@@ -191,34 +187,35 @@ fun RideDetailsScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(text = dropoffLocation, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Drop-off · $dropoffTime", fontSize = 12.sp, color = Color.Gray)
+                                Text(text = trip?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(text = "Drop-off", fontSize = 12.sp, color = Color.Gray)
                             }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(text = formattedDate, fontSize = 12.sp, color = Color.Gray)
+
+                        if (!trip?.description.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "NOTES",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Gray
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = trip?.description ?: "",
+                                fontSize = 13.sp,
+                                fontStyle = FontStyle.Italic,
+                                color = Color.DarkGray
+                            )
                         }
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                        .background(Color(0xFFC8E6C9), RoundedCornerShape(14.dp)),
-                    contentAlignment = Alignment.BottomEnd
-                ) {
-                    Surface(
-                        color = Color.White,
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(
-                            text = duration,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1A237E),
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
@@ -232,48 +229,38 @@ fun RideDetailsScreen(
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            Text(text = "Seats remaining", fontSize = 13.sp, color = Color.Gray)
-                            Text(
-                                text = "${totalSeats - (availableSeats - seatsLeft)} of $totalSeats seats — $seatsLeft free",
-                                fontSize = 12.sp,
-                                color = Color.DarkGray
-                            )
-                        }
-
+                        Text(text = "Price per seat", fontSize = 13.sp, color = Color.Gray)
                         Spacer(modifier = Modifier.weight(1f))
-
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = pricePerSeat,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1A237E)
-                            )
-                            Text(text = "per seat", fontSize = 11.sp, color = Color.Gray)
-                        }
+                        Text(
+                            text = "R${trip?.pricePerSeat ?: 0}",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1A237E)
+                        )
                     }
                 }
 
-                requestMessage?.let {
-                    if (isError) {
-                        ErrorMessage(message = it)
-                    } else {
-                        Text(text = it, color = MaterialTheme.colorScheme.primary)
-                    }
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ErrorMessage(message = it)
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 CampusLiftButton(
                     text = "Request Seat",
                     onClick = {
-                        if (seatsLeft <= 0) {
-                            requestMessage = "This ride is full."
-                            isError = true
+                        errorMessage = null
+                        if (isFull) {
+                            errorMessage = "This ride is full."
                         } else {
-                            seatsLeft -= 1
-                            requestMessage = "Request sent — waiting for driver approval."
-                            isError = false
-                            onRequestSent()
+                            bookingViewModel.createBooking(tripId, 1) { success ->
+                                if (success) {
+                                    showBanner = true
+                                } else {
+                                    errorMessage = bookingViewModel.error.value ?: "Failed to send request. Try again."
+                                }
+                            }
                         }
                     }
                 )
@@ -282,9 +269,19 @@ fun RideDetailsScreen(
                     text = "Payment held securely until trip is completed",
                     fontSize = 11.sp,
                     color = Color.Gray,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
         }
+
+        PassiveBanner(
+            message = "Request sent",
+            visible = showBanner,
+            isSuccess = true,
+            onDismiss = { showBanner = false },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp)
+        )
     }
 }

@@ -89,7 +89,7 @@ fun AppNav() {
                     onNavigateToCreateRide = { navController.navigate("createRide") },
                     onNavigateToAddVehicle = { navController.navigate("addVehicle") },
                     onNavigateToMyRides = { navController.navigate("myRides") },
-                    onRideSelected = { navController.navigate("rideDetails") }
+                    onRideSelected = { tripId -> navController.navigate("rideDetails/$tripId") }
                 )
             }
 
@@ -116,9 +116,15 @@ fun AppNav() {
                 )
             }
 
-            composable("rideDetails") {
+            composable(
+                route = "rideDetails/{tripId}",
+                arguments = listOf(navArgument("tripId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val tripId = backStackEntry.arguments?.getString("tripId") ?: ""
                 RideDetailsScreen(
-                    onBack = { navController.popBackStack() }
+                    tripId = tripId,
+                    onBack = { navController.popBackStack() },
+                    onRequestSent = { navController.popBackStack() }
                 )
             }
 
