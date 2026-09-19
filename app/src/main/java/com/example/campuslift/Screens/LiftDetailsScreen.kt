@@ -19,7 +19,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +38,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.ErrorMessage
+import com.example.campuslift.Components.PassiveBanner
 import com.example.campuslift.ViewModels.TripViewModel
+import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -52,9 +53,17 @@ fun LiftDetailsScreen(
 ) {
     val trip by tripViewModel.selected.collectAsStateWithLifecycle()
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(tripId) {
         tripViewModel.loadTrip(tripId)
+    }
+
+    LaunchedEffect(showBanner) {
+        if (showBanner) {
+            delay(1500)
+            onTripCancelled()
+        }
     }
 
     val formattedDate = trip?.eventTime?.let {
@@ -73,186 +82,198 @@ fun LiftDetailsScreen(
         }
     } ?: ""
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF1A237E))
-                .padding(16.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(Color.White.copy(alpha = 0.2f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🚗", fontSize = 24.sp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1A237E))
+                    .padding(16.dp)
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "You're driving",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "${trip?.seatsTaken ?: 0} of ${trip?.totalSeats ?: 0} seats booked",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 13.sp
-                    )
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            val statusColor = if (trip?.isComplete == true) {
-                Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-            } else {
-                Color(0xFFE3F2FD) to Color(0xFF1565C0)
-            }
-
-            Surface(
-                color = statusColor.first,
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.padding(bottom = 12.dp)
-            ) {
-                Text(
-                    text = if (trip?.isComplete == true) "•  Completed" else "•  ${trip?.seatsRemaining ?: 0} seats remaining",
-                    fontSize = 13.sp,
-                    color = statusColor.second,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                )
-            }
-
-            Card(
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Text(
-                        text = "TRIP DETAILS",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .background(Color(0xFF1A237E), CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(text = trip?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.DarkGray)
-                        }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🚗", fontSize = 24.sp)
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(10.dp)
-                                .background(Color(0xFFFF6B35), RoundedCornerShape(2.dp))
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(text = trip?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(text = "Drop-off", fontSize = 12.sp, color = Color.DarkGray)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(text = formattedDate, fontSize = 12.sp, color = Color.DarkGray)
-
-                    if (!trip?.description.isNullOrBlank()) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "NOTES",
+                            text = "You're driving",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "${trip?.seatsTaken ?: 0} of ${trip?.totalSeats ?: 0} seats booked",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                val statusColor = if (trip?.isComplete == true) {
+                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                } else {
+                    Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                }
+
+                Surface(
+                    color = statusColor.first,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                ) {
+                    Text(
+                        text = if (trip?.isComplete == true) "•  Completed" else "•  ${trip?.seatsRemaining ?: 0} seats remaining",
+                        fontSize = 13.sp,
+                        color = statusColor.second,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
+                }
+
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = "TRIP DETAILS",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(Color(0xFF1A237E), CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(text = trip?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.DarkGray)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .background(Color(0xFFFF6B35), RoundedCornerShape(2.dp))
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(text = trip?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(text = "Drop-off", fontSize = 12.sp, color = Color.DarkGray)
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(text = formattedDate, fontSize = 12.sp, color = Color.DarkGray)
+
+                        if (!trip?.description.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "NOTES",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = trip?.description ?: "",
+                                fontSize = 13.sp,
+                                fontStyle = FontStyle.Italic,
+                                color = Color.DarkGray
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Price per seat", fontSize = 13.sp, color = Color.Black)
+                        Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = trip?.description ?: "",
-                            fontSize = 13.sp,
-                            fontStyle = FontStyle.Italic,
-                            color = Color.DarkGray
+                            text = "R${trip?.pricePerSeat ?: 0}",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1A237E)
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ErrorMessage(message = it)
+                }
 
-            Card(
-                shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Price per seat", fontSize = 13.sp, color = Color.Black)
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "R${trip?.pricePerSeat ?: 0}",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (trip?.isComplete != true) {
+                    CampusLiftButton(
+                        text = "Cancel Trip",
+                        onClick = {
+                            tripViewModel.cancel(tripId) { success ->
+                                if (success) {
+                                    showBanner = true
+                                } else {
+                                    errorMessage = "Failed to cancel trip. Try again."
+                                }
+                            }
+                        }
                     )
                 }
             }
-
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(12.dp))
-                ErrorMessage(message = it)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (trip?.isComplete != true) {
-                CampusLiftButton(
-                    text = "Cancel Trip",
-                    onClick = {
-                        tripViewModel.cancel(tripId) { success ->
-                            if (success) {
-                                onTripCancelled()
-                            } else {
-                                errorMessage = "Failed to cancel trip. Try again."
-                            }
-                        }
-                    }
-                )
-            }
         }
+
+        PassiveBanner(
+            message = "Trip cancelled",
+            visible = showBanner,
+            isSuccess = false,
+            onDismiss = { showBanner = false },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp)
+        )
     }
 }

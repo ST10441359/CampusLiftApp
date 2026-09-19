@@ -1,6 +1,7 @@
 package com.example.campuslift.Screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -41,10 +43,12 @@ import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.CampusLiftTextField
 import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.ErrorMessage
+import com.example.campuslift.Components.PassiveBanner
 import com.example.campuslift.Components.ValidationUtils
 import com.example.campuslift.Data.dto.CreateTripRequest
 import com.example.campuslift.ViewModels.TripViewModel
 import com.example.campuslift.ViewModels.VehicleViewModel
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -71,7 +75,7 @@ fun CreateRideScreen(
     var showTimePicker by remember { mutableStateOf(false) }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var successMessage by remember { mutableStateOf<String?>(null) }
+    var showBanner by remember { mutableStateOf(false) }
 
     val vehicles by vehicleViewModel.vehicles.collectAsStateWithLifecycle()
     val selectedVehicle = vehicles.firstOrNull()
@@ -79,6 +83,13 @@ fun CreateRideScreen(
 
     LaunchedEffect(Unit) {
         vehicleViewModel.loadVehicles()
+    }
+
+    LaunchedEffect(showBanner) {
+        if (showBanner) {
+            delay(1500)
+            onRideCreated()
+        }
     }
 
     val displayDate = selectedDateMillis?.let {
@@ -106,187 +117,193 @@ fun CreateRideScreen(
         return isoFormat.format(calendar.time)
     }
 
-    Scaffold(
-        topBar = {
-            CampusLiftTopBar(title = "Create a Ride", onBack = onBack)
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            CampusLiftTextField(
-                value = fromLocation,
-                onValueChange = { fromLocation = it },
-                label = "Pickup location"
-            )
-
-            CampusLiftTextField(
-                value = toLocation,
-                onValueChange = { toLocation = it },
-                label = "Destination"
-            )
-
-            OutlinedTextField(
-                value = displayDate,
-                onValueChange = {},
-                readOnly = true,
-                shape = RoundedCornerShape(12.dp),
-                label = { Text("Date") },
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Filled.CalendarToday, contentDescription = "Pick date")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            OutlinedTextField(
-                value = displayTime,
-                onValueChange = {},
-                readOnly = true,
-                shape = RoundedCornerShape(12.dp),
-                label = { Text("Time") },
-                trailingIcon = {
-                    IconButton(onClick = { showTimePicker = true }) {
-                        Icon(Icons.Filled.AccessTime, contentDescription = "Pick time")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            CampusLiftTextField(
-                value = pricePerSeat,
-                onValueChange = { pricePerSeat = it },
-                label = "Price per seat"
-            )
-
-            if (selectedVehicle != null) {
-                Text(
-                    text = "Seats available: $vehicleSeats (from your ${selectedVehicle.make} ${selectedVehicle.model})",
-                    style = MaterialTheme.typography.bodyMedium
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                CampusLiftTopBar(title = "Create a Ride", onBack = onBack)
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CampusLiftTextField(
+                    value = fromLocation,
+                    onValueChange = { fromLocation = it },
+                    label = "Pickup location"
                 )
-            } else {
-                Text(
-                    text = "No vehicle found — add a vehicle first",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error
+
+                CampusLiftTextField(
+                    value = toLocation,
+                    onValueChange = { toLocation = it },
+                    label = "Destination"
                 )
-            }
 
-            CampusLiftTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = "Description (optional)"
-            )
+                OutlinedTextField(
+                    value = displayDate,
+                    onValueChange = {},
+                    readOnly = true,
+                    shape = RoundedCornerShape(12.dp),
+                    label = { Text("Date") },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Filled.CalendarToday, contentDescription = "Pick date")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            errorMessage?.let {
-                ErrorMessage(message = it)
-            }
+                OutlinedTextField(
+                    value = displayTime,
+                    onValueChange = {},
+                    readOnly = true,
+                    shape = RoundedCornerShape(12.dp),
+                    label = { Text("Time") },
+                    trailingIcon = {
+                        IconButton(onClick = { showTimePicker = true }) {
+                            Icon(Icons.Filled.AccessTime, contentDescription = "Pick time")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            successMessage?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.primary)
-            }
+                CampusLiftTextField(
+                    value = pricePerSeat,
+                    onValueChange = { pricePerSeat = it },
+                    label = "Price per seat"
+                )
 
-            CampusLiftButton(
-                text = "Submit",
-                onClick = {
-                    errorMessage = null
-                    successMessage = null
+                if (selectedVehicle != null) {
+                    Text(
+                        text = "Seats available: $vehicleSeats (from your ${selectedVehicle.make} ${selectedVehicle.model})",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = "No vehicle found — add a vehicle first",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
 
-                    val priceValue = pricePerSeat.toDoubleOrNull()
-                    val vehicleId = selectedVehicle?.id
-                    val eventTimeIso = buildIsoEventTime()
+                CampusLiftTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = "Description (optional)"
+                )
 
-                    val validationError = ValidationUtils.validateRequired(fromLocation, "Pickup location")
-                        ?: ValidationUtils.validateRequired(toLocation, "Destination")
-                        ?: if (eventTimeIso == null) "Please choose a date and time" else null
-                            ?: if (priceValue == null || priceValue < 0) "Enter a valid price per seat" else null
-                                ?: if (vehicleId == null || vehicleSeats == null) "No vehicle found — add a vehicle first" else null
+                errorMessage?.let {
+                    ErrorMessage(message = it)
+                }
 
-                    if (validationError != null) {
-                        errorMessage = validationError
-                    } else {
-                        tripViewModel.create(
-                            CreateTripRequest(
-                                vehicleId = vehicleId,
-                                fromLocation = fromLocation,
-                                toLocation = toLocation,
-                                fromLat = 0.0,
-                                fromLng = 0.0,
-                                toLat = 0.0,
-                                toLng = 0.0,
-                                eventTime = eventTimeIso!!,
-                                pricePerSeat = priceValue!!,
-                                totalSeats = vehicleSeats!!,
-                                description = description.ifBlank { null }
-                            )
-                        ) { success ->
-                            if (success) {
-                                successMessage = "Ride created successfully."
-                                onRideCreated()
-                            } else {
-                                errorMessage = "Failed to create ride. Try again."
+                CampusLiftButton(
+                    text = "Submit",
+                    onClick = {
+                        errorMessage = null
+
+                        val priceValue = pricePerSeat.toDoubleOrNull()
+                        val vehicleId = selectedVehicle?.id
+                        val eventTimeIso = buildIsoEventTime()
+
+                        val validationError = ValidationUtils.validateRequired(fromLocation, "Pickup location")
+                            ?: ValidationUtils.validateRequired(toLocation, "Destination")
+                            ?: if (eventTimeIso == null) "Please choose a date and time" else null
+                                ?: if (priceValue == null || priceValue < 0) "Enter a valid price per seat" else null
+                                    ?: if (vehicleId == null || vehicleSeats == null) "No vehicle found — add a vehicle first" else null
+
+                        if (validationError != null) {
+                            errorMessage = validationError
+                        } else {
+                            tripViewModel.create(
+                                CreateTripRequest(
+                                    vehicleId = vehicleId,
+                                    fromLocation = fromLocation,
+                                    toLocation = toLocation,
+                                    fromLat = 0.0,
+                                    fromLng = 0.0,
+                                    toLat = 0.0,
+                                    toLng = 0.0,
+                                    eventTime = eventTimeIso!!,
+                                    pricePerSeat = priceValue!!,
+                                    totalSeats = vehicleSeats!!,
+                                    description = description.ifBlank { null }
+                                )
+                            ) { success ->
+                                if (success) {
+                                    showBanner = true
+                                } else {
+                                    errorMessage = "Failed to create ride. Try again."
+                                }
                             }
                         }
                     }
-                }
-            )
-        }
-    }
-
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    selectedDateMillis = datePickerState.selectedDateMillis
-                    showDatePicker = false
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
-                }
+                )
             }
-        ) {
-            DatePicker(state = datePickerState)
         }
-    }
 
-    if (showTimePicker) {
-        val timePickerState = rememberTimePickerState(is24Hour = true)
-        Dialog(onDismissRequest = { showTimePicker = false }) {
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surface
+        PassiveBanner(
+            message = "Ride published",
+            visible = showBanner,
+            isSuccess = true,
+            onDismiss = { showBanner = false },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp)
+        )
+
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        selectedDateMillis = datePickerState.selectedDateMillis
+                        showDatePicker = false
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                DatePicker(state = datePickerState)
+            }
+        }
+
+        if (showTimePicker) {
+            val timePickerState = rememberTimePickerState(is24Hour = true)
+            Dialog(onDismissRequest = { showTimePicker = false }) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    Text(text = "Select time", style = MaterialTheme.typography.titleMedium)
-                    TimeInput(state = timePickerState)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        TextButton(onClick = { showTimePicker = false }) {
-                            Text("Cancel")
-                        }
-                        TextButton(onClick = {
-                            selectedHour = timePickerState.hour
-                            selectedMinute = timePickerState.minute
-                            showTimePicker = false
-                        }) {
-                            Text("OK")
+                        Text(text = "Select time", style = MaterialTheme.typography.titleMedium)
+                        TimeInput(state = timePickerState)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            TextButton(onClick = { showTimePicker = false }) {
+                                Text("Cancel")
+                            }
+                            TextButton(onClick = {
+                                selectedHour = timePickerState.hour
+                                selectedMinute = timePickerState.minute
+                                showTimePicker = false
+                            }) {
+                                Text("OK")
+                            }
                         }
                     }
                 }
