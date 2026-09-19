@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +35,7 @@ import com.example.campuslift.Components.CampusLiftTextField
 import com.example.campuslift.Components.EmptyState
 import com.example.campuslift.Data.dto.TripWithAvailabilityDto
 import com.example.campuslift.ViewModels.TripViewModel
+import com.example.campuslift.ViewModels.UserViewModel
 import com.example.campuslift.ViewModels.VehicleViewModel
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -50,7 +50,8 @@ fun HomeScreen(
     onNavigateToMyRides: () -> Unit,
     onRideSelected: (String) -> Unit = {},
     vehicleViewModel: VehicleViewModel = viewModel(),
-    tripViewModel: TripViewModel = viewModel()
+    tripViewModel: TripViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
     var fromLocation by remember { mutableStateOf("") }
     var toLocation by remember { mutableStateOf("") }
@@ -58,11 +59,15 @@ fun HomeScreen(
 
     val vehicles by vehicleViewModel.vehicles.collectAsStateWithLifecycle()
     val trips by tripViewModel.trips.collectAsStateWithLifecycle()
+    val currentUser by userViewModel.user.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         vehicleViewModel.loadVehicles()
         tripViewModel.search()
+        userViewModel.loadMe()
     }
+
+    val otherPeoplesTrips = trips.filter { it.driverId != currentUser?.id }
 
     Column(
         modifier = Modifier
@@ -134,14 +139,14 @@ fun HomeScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "${trips.size} rides available",
+                text = "${otherPeoplesTrips.size} rides available",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1A237E)
             )
         }
 
-        if (trips.isEmpty()) {
+        if (otherPeoplesTrips.isEmpty()) {
             EmptyState(
                 title = "No rides found",
                 subtitle = "Try adjusting your search"
@@ -152,7 +157,7 @@ fun HomeScreen(
                     .weight(1f)
                     .padding(horizontal = 16.dp)
             ) {
-                items(trips) { trip ->
+                items(otherPeoplesTrips) { trip ->
                     TripCard(trip = trip, onClick = { onRideSelected(trip.id) })
                 }
             }
