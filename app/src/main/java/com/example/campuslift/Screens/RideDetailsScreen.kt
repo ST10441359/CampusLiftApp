@@ -54,11 +54,13 @@ fun RideDetailsScreen(
     bookingViewModel: BookingViewModel = viewModel()
 ) {
     val trip by tripViewModel.selected.collectAsStateWithLifecycle()
+    val myBookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(tripId) {
         tripViewModel.loadTrip(tripId)
+        bookingViewModel.loadMyBookings()
     }
 
     LaunchedEffect(showBanner) {
@@ -67,6 +69,8 @@ fun RideDetailsScreen(
             onRequestSent()
         }
     }
+
+    val existingBooking = myBookings.find { it.tripId == tripId && it.cancellationTime == null }
 
     val formattedDate = trip?.eventTime?.let {
         try {
@@ -135,17 +139,43 @@ fun RideDetailsScreen(
             ) {
                 val isFull = (trip?.seatsRemaining ?: 0) <= 0
 
-                Surface(
-                    color = if (isFull) Color(0xFFFFEBEE) else Color(0xFFE3F2FD),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(bottom = 12.dp)
-                ) {
-                    Text(
-                        text = if (isFull) "•  This ride is full" else "•  ${trip?.seatsRemaining ?: 0} seats available",
-                        fontSize = 13.sp,
-                        color = if (isFull) Color(0xFFD32F2F) else Color(0xFF1565C0),
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                    )
+                if (existingBooking != null) {
+                    val statusColor = when (existingBooking.approval) {
+                        "approved" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                        "rejected" -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
+                        else -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+                    }
+                    val statusText = when (existingBooking.approval) {
+                        "approved" -> "Your request was approved"
+                        "rejected" -> "This trip was rejected by the driver"
+                        else -> "Your request is pending approval"
+                    }
+
+                    Surface(
+                        color = statusColor.first,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    ) {
+                        Text(
+                            text = "•  $statusText",
+                            fontSize = 13.sp,
+                            color = statusColor.second,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
+                } else {
+                    Surface(
+                        color = if (isFull) Color(0xFFFFEBEE) else Color(0xFFE3F2FD),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    ) {
+                        Text(
+                            text = if (isFull) "•  This ride is full" else "•  ${trip?.seatsRemaining ?: 0} seats available",
+                            fontSize = 13.sp,
+                            color = if (isFull) Color(0xFFD32F2F) else Color(0xFF1565C0),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                        )
+                    }
                 }
 
                 Card(
@@ -247,30 +277,32 @@ fun RideDetailsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                CampusLiftButton(
-                    text = "Request Seat",
-                    onClick = {
-                        errorMessage = null
-                        if (isFull) {
-                            errorMessage = "This ride is full."
-                        } else {
-                            bookingViewModel.createBooking(tripId, 1) { success ->
-                                if (success) {
-                                    showBanner = true
-                                } else {
-                                    errorMessage = bookingViewModel.error.value ?: "Failed to send request. Try again."
+                if (existingBooking == null) {
+                    CampusLiftButton(
+                        text = "Request Seat",
+                        onClick = {
+                            errorMessage = null
+                            if (isFull) {
+                                errorMessage = "This ride is full."
+                            } else {
+                                bookingViewModel.createBooking(tripId, 1) { success ->
+                                    if (success) {
+                                        showBanner = true
+                                    } else {
+                                        errorMessage = bookingViewModel.error.value ?: "Failed to send request. Try again."
+                                    }
                                 }
                             }
                         }
-                    }
-                )
+                    )
 
-                Text(
-                    text = "Payment held securely until trip is completed",
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+                    Text(
+                        text = "Payment held securely until trip is completed",
+                        fontSize = 11.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
             }
         }
 

@@ -43,6 +43,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.EmptyState
 import com.example.campuslift.Data.dto.TripWithAvailabilityDto
+import com.example.campuslift.Data.repository.BookingRepository
 import com.example.campuslift.ViewModels.TripViewModel
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -132,6 +133,15 @@ private fun formatEventTime(raw: String?): String {
 
 @Composable
 private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
+    var pendingCount by remember(trip.id) { mutableStateOf(0) }
+
+    LaunchedEffect(trip.id) {
+        BookingRepository().forTrip(trip.id)
+            .onSuccess { bookings ->
+                pendingCount = bookings.count { it.approval == "pending" }
+            }
+    }
+
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -186,6 +196,22 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     fontStyle = FontStyle.Italic,
                     color = Color.DarkGray
                 )
+            }
+
+            if (pendingCount > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = Color(0xFFFFF3E0),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "🔔  $pendingCount pending request${if (pendingCount == 1) "" else "s"}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE65100),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    )
+                }
             }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))

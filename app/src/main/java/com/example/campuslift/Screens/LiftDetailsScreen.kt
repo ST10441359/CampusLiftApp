@@ -1,6 +1,7 @@
 package com.example.campuslift.Screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,10 +16,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +43,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.ErrorMessage
 import com.example.campuslift.Components.PassiveBanner
+import com.example.campuslift.Data.dto.BookingWithTripDto
+import com.example.campuslift.ViewModels.BookingViewModel
 import com.example.campuslift.ViewModels.TripViewModel
 import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
@@ -49,18 +55,24 @@ fun LiftDetailsScreen(
     tripId: String,
     onBack: () -> Unit = {},
     onTripCancelled: () -> Unit = {},
-    tripViewModel: TripViewModel = viewModel()
+    tripViewModel: TripViewModel = viewModel(),
+    bookingViewModel: BookingViewModel = viewModel()
 ) {
     val trip by tripViewModel.selected.collectAsStateWithLifecycle()
+    val tripBookings by bookingViewModel.tripBookings.collectAsStateWithLifecycle()
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showBanner by remember { mutableStateOf(false) }
+
+    var showCancelBanner by remember { mutableStateOf(false) }
+    var approvalBannerMessage by remember { mutableStateOf("") }
+    var showApprovalBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(tripId) {
         tripViewModel.loadTrip(tripId)
+        bookingViewModel.loadForTrip(tripId)
     }
 
-    LaunchedEffect(showBanner) {
-        if (showBanner) {
+    LaunchedEffect(showCancelBanner) {
+        if (showCancelBanner) {
             delay(1500)
             onTripCancelled()
         }
@@ -81,6 +93,8 @@ fun LiftDetailsScreen(
             ""
         }
     } ?: ""
+
+    val pendingRequests = tripBookings.filter { it.approval == "pending" }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -148,6 +162,60 @@ fun LiftDetailsScreen(
                         color = statusColor.second,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
+                }
+
+                if (pendingRequests.isNotEmpty()) {
+                    Card(
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = "PENDING REQUESTS (${pendingRequests.size})",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            pendingRequests.forEachIndexed { index, request ->
+                                PendingRequestRow(
+                                    request = request,
+                                    onApprove = {
+                                        bookingViewModel.approveBooking(request.id, true) { success ->
+                                            if (success) {
+                                                bookingViewModel.loadForTrip(tripId)
+                                                tripViewModel.loadTrip(tripId)
+                                                approvalBannerMessage = "Request approved"
+                                                showApprovalBanner = true
+                                            } else {
+                                                errorMessage = "Failed to approve request."
+                                            }
+                                        }
+                                    },
+                                    onDecline = {
+                                        bookingViewModel.approveBooking(request.id, false) { success ->
+                                            if (success) {
+                                                bookingViewModel.loadForTrip(tripId)
+                                                approvalBannerMessage = "Request declined"
+                                                showApprovalBanner = true
+                                            } else {
+                                                errorMessage = "Failed to decline request."
+                                            }
+                                        }
+                                    }
+                                )
+                                if (index < pendingRequests.lastIndex) {
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 Card(
@@ -255,7 +323,7 @@ fun LiftDetailsScreen(
                         onClick = {
                             tripViewModel.cancel(tripId) { success ->
                                 if (success) {
-                                    showBanner = true
+                                    showCancelBanner = true
                                 } else {
                                     errorMessage = "Failed to cancel trip. Try again."
                                 }
@@ -268,12 +336,60 @@ fun LiftDetailsScreen(
 
         PassiveBanner(
             message = "Trip cancelled",
-            visible = showBanner,
+            visible = showCancelBanner,
             isSuccess = false,
-            onDismiss = { showBanner = false },
+            onDismiss = { showCancelBanner = false },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 8.dp)
         )
+
+        PassiveBanner(
+            message = approvalBannerMessage,
+            visible = showApprovalBanner,
+            isSuccess = approvalBannerMessage.contains("approved"),
+            onDismiss = { showApprovalBanner = false },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp)
+        )
+    }
+}
+
+@Composable
+private fun PendingRequestRow(
+    request: BookingWithTripDto,
+    onApprove: () -> Unit,
+    onDecline: () -> Unit
+) {
+    Column {
+        Text(
+            text = "${request.seatsRequested} seat${if (request.seatsRequested == 1) "" else "s"} requested",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A237E)
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onApprove,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Approve")
+            }
+
+            OutlinedButton(
+                onClick = onDecline,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Decline")
+            }
+        }
     }
 }
