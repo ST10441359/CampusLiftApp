@@ -20,7 +20,11 @@ data class TripWithAvailabilityDto(
     @SerializedName("isComplete") val isComplete: Boolean,
     @SerializedName("createdAt") val createdAt: String?,
     @SerializedName("seatsTaken") val seatsTaken: Int,
-    @SerializedName("seatsRemaining") val seatsRemaining: Int
+    @SerializedName("seatsRemaining") val seatsRemaining: Int,
+
+    // NEW: denormalized display info
+    @SerializedName("driver") val driver: PublicUserSummaryDto?,
+    @SerializedName("vehicle") val vehicle: PublicVehicleSummaryDto?
 )
 
 /**
