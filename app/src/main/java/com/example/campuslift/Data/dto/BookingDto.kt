@@ -27,7 +27,10 @@ data class BookingWithTripDto(
     @SerializedName("fromLocation") val fromLocation: String,
     @SerializedName("toLocation") val toLocation: String,
     @SerializedName("eventTime") val eventTime: String?,
-    @SerializedName("pricePerSeat") val pricePerSeat: Double
+    @SerializedName("pricePerSeat") val pricePerSeat: Double,
+
+    // NEW: populated on GET /api/bookings/trip/{tripId}, null on GET /api/bookings/mine
+    @SerializedName("passenger") val passenger: PublicUserSummaryDto?
 )
 
 data class CreateBookingRequest(
