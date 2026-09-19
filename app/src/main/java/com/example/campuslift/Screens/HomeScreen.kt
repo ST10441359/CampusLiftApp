@@ -17,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,10 +27,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.CampusLiftRideCard
 import com.example.campuslift.Components.CampusLiftTextField
 import com.example.campuslift.Components.EmptyState
+import com.example.campuslift.ViewModels.VehicleViewModel
 
 data class RideResult(
     val driverInitials: String,
@@ -49,12 +53,20 @@ fun HomeScreen(
     onSignOut: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToCreateRide: () -> Unit,
+    onNavigateToAddVehicle: () -> Unit,
     onNavigateToMyRides: () -> Unit,
-    onRideSelected: () -> Unit = {}
+    onRideSelected: () -> Unit = {},
+    vehicleViewModel: VehicleViewModel = viewModel()
 ) {
     var fromLocation by remember { mutableStateOf("") }
     var toLocation by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
+
+    val vehicles by vehicleViewModel.vehicles.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        vehicleViewModel.loadVehicles()
+    }
 
     val allRides = remember {
         listOf(
@@ -171,7 +183,13 @@ fun HomeScreen(
         ) {
             CampusLiftButton(
                 text = "Create a Ride",
-                onClick = onNavigateToCreateRide
+                onClick = {
+                    if (vehicles.isEmpty()) {
+                        onNavigateToAddVehicle()
+                    } else {
+                        onNavigateToCreateRide()
+                    }
+                }
             )
         }
     }

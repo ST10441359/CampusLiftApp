@@ -11,7 +11,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.campuslift.Auth.AuthState
+import com.example.campuslift.Screens.AddVehicleScreen
 import com.example.campuslift.Screens.AlertsScreen
+import com.example.campuslift.Screens.BookingDetailsScreen
 import com.example.campuslift.Screens.CreateRideScreen
 import com.example.campuslift.Screens.HomeScreen
 import com.example.campuslift.Screens.LoginScreen
@@ -19,7 +21,6 @@ import com.example.campuslift.Screens.MyRidesScreen
 import com.example.campuslift.Screens.RegisterScreen
 import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
-import com.example.campuslift.Screens.BookingDetailsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 
 private val bottomNavRoutes = setOf("home", "myRides", "alerts", "settings")
@@ -82,6 +83,7 @@ fun AppNav() {
                     },
                     onNavigateToSettings = { navController.navigate("settings") },
                     onNavigateToCreateRide = { navController.navigate("createRide") },
+                    onNavigateToAddVehicle = { navController.navigate("addVehicle") },
                     onNavigateToMyRides = { navController.navigate("myRides") },
                     onRideSelected = { navController.navigate("rideDetails") }
                 )
@@ -91,6 +93,22 @@ fun AppNav() {
                 CreateRideScreen(
                     onBack = { navController.popBackStack() },
                     onRideCreated = { navController.popBackStack() }
+                )
+            }
+
+            composable("addVehicle") {
+                AddVehicleScreen(
+                    onBack = { navController.popBackStack() },
+                    onContinueToCreateRide = {
+                        navController.navigate("createRide") {
+                            popUpTo("home")
+                        }
+                    },
+                    onBackToHome = {
+                        navController.navigate("home") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }
                 )
             }
 
