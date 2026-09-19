@@ -80,7 +80,7 @@ fun BookingCard(
                     Text(
                         text = "${ride.fromLocation} → ${ride.toLocation}",
                         fontSize = 13.sp,
-                        color = Color.DarkGray
+                        color = Color.Black
                     )
                 }
 
@@ -100,7 +100,7 @@ fun BookingCard(
                 Text(
                     text = "📅 ${ride.date}",
                     fontSize = 13.sp,
-                    color = Color.DarkGray
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -133,7 +133,7 @@ fun BookingCard(
                 Text(
                     text = "🕐 ${ride.time}",
                     fontSize = 13.sp,
-                    color = Color.DarkGray
+                    color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.weight(1f))

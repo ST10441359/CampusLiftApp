@@ -6,16 +6,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.campuslift.Auth.AuthState
 import com.example.campuslift.Screens.AddVehicleScreen
 import com.example.campuslift.Screens.AlertsScreen
 import com.example.campuslift.Screens.BookingDetailsScreen
 import com.example.campuslift.Screens.CreateRideScreen
 import com.example.campuslift.Screens.HomeScreen
+import com.example.campuslift.Screens.LiftDetailsScreen
 import com.example.campuslift.Screens.LiftsScreen
 import com.example.campuslift.Screens.LoginScreen
 import com.example.campuslift.Screens.MyRidesScreen
@@ -134,7 +137,20 @@ fun AppNav() {
 
             composable("lifts") {
                 LiftsScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onTripSelected = { tripId -> navController.navigate("liftDetails/$tripId") }
+                )
+            }
+
+            composable(
+                route = "liftDetails/{tripId}",
+                arguments = listOf(navArgument("tripId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val tripId = backStackEntry.arguments?.getString("tripId") ?: ""
+                LiftDetailsScreen(
+                    tripId = tripId,
+                    onBack = { navController.popBackStack() },
+                    onTripCancelled = { navController.popBackStack() }
                 )
             }
 

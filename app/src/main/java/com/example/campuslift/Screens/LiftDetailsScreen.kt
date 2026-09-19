@@ -15,41 +15,64 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.CampusLiftButton
+import com.example.campuslift.Components.ErrorMessage
+import com.example.campuslift.ViewModels.TripViewModel
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun BookingDetailsScreen(
-    driverInitials: String = "TM",
-    driverName: String = "Thandiwe Mthembu",
-    rating: Double = 4.8,
-    tripCount: Int = 47,
-    vehicleInfo: String = "Toyota Etios · HB 42 KZN",
-    pickupLocation: String = "Howard College Main Gate",
-    pickupTime: String = "07:30 AM",
-    dropoffLocation: String = "Westville Campus Library",
-    dropoffTime: String = "~07:55 AM",
-    duration: String = "~25 min · 18 km",
-    status: String = "Driver arriving",
-    pricePerSeat: String = "R18",
+fun LiftDetailsScreen(
+    tripId: String,
     onBack: () -> Unit = {},
-    onMessageDriver: () -> Unit = {},
-    onCancelBooking: () -> Unit = {}
+    onTripCancelled: () -> Unit = {},
+    tripViewModel: TripViewModel = viewModel()
 ) {
+    val trip by tripViewModel.selected.collectAsStateWithLifecycle()
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(tripId) {
+        tripViewModel.loadTrip(tripId)
+    }
+
+    val formattedDate = trip?.eventTime?.let {
+        try {
+            OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy"))
+        } catch (e: Exception) {
+            it
+        }
+    } ?: "No date set"
+
+    val formattedTime = trip?.eventTime?.let {
+        try {
+            OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("hh:mm a"))
+        } catch (e: Exception) {
+            ""
+        }
+    } ?: ""
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -72,61 +95,23 @@ fun BookingDetailsScreen(
                         .background(Color.White.copy(alpha = 0.2f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = driverInitials,
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "🚗", fontSize = 24.sp)
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = driverName,
+                        text = "You're driving",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "★ $rating · $tripCount trips",
+                        text = "${trip?.seatsTaken ?: 0} of ${trip?.totalSeats ?: 0} seats booked",
                         color = Color.White.copy(alpha = 0.85f),
                         fontSize = 13.sp
                     )
-                    Text(
-                        text = vehicleInfo,
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 12.sp
-                    )
-                }
-
-                IconButton(onClick = { }) {
-                    Surface(
-                        color = Color.White.copy(alpha = 0.2f),
-                        shape = CircleShape
-                    ) {
-                        Icon(
-                            Icons.Filled.Call,
-                            contentDescription = "Call",
-                            tint = Color.White,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
-                }
-
-                IconButton(onClick = onMessageDriver) {
-                    Surface(
-                        color = Color.White.copy(alpha = 0.2f),
-                        shape = CircleShape
-                    ) {
-                        Icon(
-                            Icons.Filled.Chat,
-                            contentDescription = "Message",
-                            tint = Color.White,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                    }
                 }
             }
         }
@@ -136,7 +121,7 @@ fun BookingDetailsScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            val statusColor = if (status == "Confirmed") {
+            val statusColor = if (trip?.isComplete == true) {
                 Color(0xFFE8F5E9) to Color(0xFF2E7D32)
             } else {
                 Color(0xFFE3F2FD) to Color(0xFF1565C0)
@@ -148,7 +133,7 @@ fun BookingDetailsScreen(
                 modifier = Modifier.padding(bottom = 12.dp)
             ) {
                 Text(
-                    text = "•  $status",
+                    text = if (trip?.isComplete == true) "•  Completed" else "•  ${trip?.seatsRemaining ?: 0} seats remaining",
                     fontSize = 13.sp,
                     color = statusColor.second,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
@@ -166,7 +151,7 @@ fun BookingDetailsScreen(
                         text = "TRIP DETAILS",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.DarkGray
+                        color = Color.Black
                     )
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -179,8 +164,8 @@ fun BookingDetailsScreen(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text(text = pickupLocation, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(text = "Pickup · $pickupTime", fontSize = 12.sp, color = Color.Black)
+                            Text(text = trip?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.DarkGray)
                         }
                     }
 
@@ -194,34 +179,31 @@ fun BookingDetailsScreen(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text(text = dropoffLocation, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(text = "Drop-off · $dropoffTime", fontSize = 12.sp, color = Color.DarkGray)
+                            Text(text = trip?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(text = "Drop-off", fontSize = 12.sp, color = Color.DarkGray)
                         }
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(140.dp)
-                    .background(Color(0xFFC8E6C9), RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.BottomEnd
-            ) {
-                Surface(
-                    color = Color.White,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = duration,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E),
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                    )
+                    Text(text = formattedDate, fontSize = 12.sp, color = Color.DarkGray)
+
+                    if (!trip?.description.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "NOTES",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = trip?.description ?: "",
+                            fontSize = 13.sp,
+                            fontStyle = FontStyle.Italic,
+                            color = Color.DarkGray
+                        )
+                    }
                 }
             }
 
@@ -239,10 +221,10 @@ fun BookingDetailsScreen(
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Total fare", fontSize = 13.sp, color = Color.Gray)
+                    Text(text = "Price per seat", fontSize = 13.sp, color = Color.Black)
                     Spacer(modifier = Modifier.weight(1f))
                     Text(
-                        text = pricePerSeat,
+                        text = "R${trip?.pricePerSeat ?: 0}",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A237E)
@@ -250,12 +232,27 @@ fun BookingDetailsScreen(
                 }
             }
 
+            errorMessage?.let {
+                Spacer(modifier = Modifier.height(12.dp))
+                ErrorMessage(message = it)
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            CampusLiftButton(
-                text = "Cancel Booking",
-                onClick = onCancelBooking
-            )
+            if (trip?.isComplete != true) {
+                CampusLiftButton(
+                    text = "Cancel Trip",
+                    onClick = {
+                        tripViewModel.cancel(tripId) { success ->
+                            if (success) {
+                                onTripCancelled()
+                            } else {
+                                errorMessage = "Failed to cancel trip. Try again."
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 }

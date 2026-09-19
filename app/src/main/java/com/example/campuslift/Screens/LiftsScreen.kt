@@ -1,6 +1,7 @@
 package com.example.campuslift.Screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +61,7 @@ fun LiftsScreen(
     }
 
     val visibleTrips = trips.filter { trip ->
-        if (selectedTab == 0) !trip.isComplete else trip.isComplete
+        trip.isActive && (if (selectedTab == 0) !trip.isComplete else trip.isComplete)
     }
 
     Scaffold(
@@ -137,6 +139,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
+            .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -172,6 +175,16 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     text = "›",
                     fontSize = 18.sp,
                     color = Color.Gray
+                )
+            }
+
+            if (!trip.description.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = trip.description,
+                    fontSize = 12.sp,
+                    fontStyle = FontStyle.Italic,
+                    color = Color.DarkGray
                 )
             }
 
