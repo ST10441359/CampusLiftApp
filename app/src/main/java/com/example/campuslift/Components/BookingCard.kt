@@ -1,17 +1,12 @@
 package com.example.campuslift.Components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,22 +20,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.campuslift.Data.dto.BookingWithTripDto
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
-data class MyRideEntry(
-    val driverInitials: String,
-    val driverName: String,
-    val fromLocation: String,
-    val toLocation: String,
-    val date: String,
-    val time: String,
-    val status: String,
-    val price: String,
-    val isUpcoming: Boolean = true
-)
+private fun formatBookingDate(raw: String?): String {
+    if (raw == null) return "No date set"
+    return try {
+        OffsetDateTime.parse(raw).format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy"))
+    } catch (e: Exception) {
+        raw
+    }
+}
+
+private fun formatBookingTime(raw: String?): String {
+    if (raw == null) return ""
+    return try {
+        OffsetDateTime.parse(raw).format(DateTimeFormatter.ofPattern("hh:mm a"))
+    } catch (e: Exception) {
+        ""
+    }
+}
 
 @Composable
 fun BookingCard(
-    ride: MyRideEntry,
+    booking: BookingWithTripDto,
     onClick: () -> Unit = {}
 ) {
     Card(
@@ -54,31 +58,15 @@ fun BookingCard(
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(Color(0xFF1A237E), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = ride.driverInitials,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
-
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = ride.driverName,
+                        text = "${booking.fromLocation} → ${booking.toLocation}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1A237E)
                     )
                     Text(
-                        text = "${ride.fromLocation} → ${ride.toLocation}",
+                        text = "${booking.seatsRequested} seat${if (booking.seatsRequested == 1) "" else "s"} requested",
                         fontSize = 13.sp,
                         color = Color.Black
                     )
@@ -98,17 +86,23 @@ fun BookingCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "📅 ${ride.date}",
+                    text = "📅 ${formatBookingDate(booking.eventTime)}",
                     fontSize = 13.sp,
                     color = Color.Black
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                val statusColor = if (ride.status == "Confirmed") {
-                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                } else {
-                    Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                val statusColor = when (booking.approval) {
+                    "approved" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                    "rejected" -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
+                    else -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+                }
+
+                val statusText = when (booking.approval) {
+                    "approved" -> "Confirmed"
+                    "rejected" -> "Rejected"
+                    else -> "Pending"
                 }
 
                 Surface(
@@ -116,7 +110,7 @@ fun BookingCard(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "•  ${ride.status}",
+                        text = "•  $statusText",
                         fontSize = 12.sp,
                         color = statusColor.second,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -131,7 +125,7 @@ fun BookingCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "🕐 ${ride.time}",
+                    text = "🕐 ${formatBookingTime(booking.eventTime)}",
                     fontSize = 13.sp,
                     color = Color.Black
                 )
@@ -139,7 +133,7 @@ fun BookingCard(
                 Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = ride.price,
+                    text = "R${booking.pricePerSeat}",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF1A237E)

@@ -131,13 +131,19 @@ fun AppNav() {
             composable("myRides") {
                 MyRidesScreen(
                     onBack = { navController.popBackStack() },
-                    onBookingSelected = { navController.navigate("bookingDetails") }
+                    onBookingSelected = { bookingId -> navController.navigate("bookingDetails/$bookingId") }
                 )
             }
 
-            composable("bookingDetails") {
+            composable(
+                route = "bookingDetails/{bookingId}",
+                arguments = listOf(navArgument("bookingId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val bookingId = backStackEntry.arguments?.getString("bookingId") ?: ""
                 BookingDetailsScreen(
-                    onBack = { navController.popBackStack() }
+                    bookingId = bookingId,
+                    onBack = { navController.popBackStack() },
+                    onBookingCancelled = { navController.popBackStack() }
                 )
             }
 

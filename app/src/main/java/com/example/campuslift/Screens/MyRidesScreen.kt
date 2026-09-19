@@ -11,29 +11,44 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.BookingCard
 import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.EmptyState
-import com.example.campuslift.Components.MyRideEntry
+import com.example.campuslift.ViewModels.BookingViewModel
+import java.time.OffsetDateTime
 
 @Composable
 fun MyRidesScreen(
-    rides: List<MyRideEntry> = listOf(
-        MyRideEntry("TM", "Thandiwe M.", "Howard College", "Westville Campus", "Fri, 16 Aug 2026", "07:30 AM", "Driver arriving", "R18"),
-        MyRideEntry("RV", "Ruan vdW", "Westville Campus", "Howard College", "Mon, 19 Aug 2026", "07:00 AM", "Confirmed", "R20"),
-        MyRideEntry("KN", "Kefilwe N.", "Howard College", "PMB Campus", "Wed, 21 Aug 2026", "06:45 AM", "Confirmed", "R35")
-    ),
     onBack: () -> Unit = {},
-    onBookingSelected: () -> Unit = {}
+    onBookingSelected: (String) -> Unit = {},
+    bookingViewModel: BookingViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val visibleRides = rides.filter { it.isUpcoming == (selectedTab == 0) }
+    val bookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        bookingViewModel.loadMyBookings()
+    }
+
+    val now = OffsetDateTime.now()
+    val visibleBookings = bookings.filter { booking ->
+        val isPast = try {
+            booking.eventTime?.let { OffsetDateTime.parse(it).isBefore(now) } ?: false
+        } catch (e: Exception) {
+            false
+        }
+        val isCancelled = booking.cancellationTime != null
+        if (selectedTab == 0) !isPast && !isCancelled else isPast || isCancelled
+    }
 
     Scaffold(
         topBar = {
@@ -64,15 +79,15 @@ fun MyRidesScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (visibleRides.isEmpty()) {
+                if (visibleBookings.isEmpty()) {
                     EmptyState(
                         title = "No bookings here",
                         subtitle = "Book or offer a ride to see it here"
                     )
                 } else {
                     LazyColumn {
-                        items(visibleRides) { ride ->
-                            BookingCard(ride, onClick = onBookingSelected)
+                        items(visibleBookings) { booking ->
+                            BookingCard(booking, onClick = { onBookingSelected(booking.id) })
                         }
                     }
                 }
