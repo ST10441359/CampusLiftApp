@@ -2,6 +2,7 @@ package com.example.campuslift.Screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,8 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -192,6 +196,12 @@ private fun formatEventTime(raw: String?): String {
     }
 }
 
+private fun driverInitials(name: String?, surname: String?): String {
+    val first = name?.trim()?.firstOrNull()?.uppercaseChar()
+    val last = surname?.trim()?.firstOrNull()?.uppercaseChar()
+    return listOfNotNull(first, last).joinToString("").ifBlank { "?" }
+}
+
 @Composable
 private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
     Card(
@@ -204,6 +214,52 @@ private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
             .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(Color(0xFF1A237E), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = driverInitials(trip.driver?.name, trip.driver?.surname),
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = listOfNotNull(trip.driver?.name, trip.driver?.surname)
+                            .joinToString(" ")
+                            .ifBlank { "Driver" },
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A237E)
+                    )
+                    if (trip.vehicle != null) {
+                        Text(
+                            text = listOfNotNull(trip.vehicle.color, trip.vehicle.make, trip.vehicle.model)
+                                .joinToString(" "),
+                            fontSize = 12.sp,
+                            color = Color.DarkGray
+                        )
+                        trip.vehicle.licensePlate?.let { plate ->
+                            Text(
+                                text = plate,
+                                fontSize = 11.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "${trip.fromLocation} → ${trip.toLocation}",
                 fontSize = 16.sp,
