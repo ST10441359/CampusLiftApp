@@ -16,6 +16,7 @@ import com.example.campuslift.Screens.AlertsScreen
 import com.example.campuslift.Screens.BookingDetailsScreen
 import com.example.campuslift.Screens.CreateRideScreen
 import com.example.campuslift.Screens.HomeScreen
+import com.example.campuslift.Screens.LiftsScreen
 import com.example.campuslift.Screens.LoginScreen
 import com.example.campuslift.Screens.MyRidesScreen
 import com.example.campuslift.Screens.RegisterScreen
@@ -23,7 +24,7 @@ import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 
-private val bottomNavRoutes = setOf("home", "myRides", "alerts", "settings")
+private val bottomNavRoutes = setOf("home", "myRides", "lifts", "alerts", "settings")
 
 @Composable
 fun AppNav() {
@@ -127,6 +128,12 @@ fun AppNav() {
 
             composable("bookingDetails") {
                 BookingDetailsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable("lifts") {
+                LiftsScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
