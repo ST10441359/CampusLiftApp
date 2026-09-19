@@ -27,7 +27,11 @@ class UserViewModel(
      * Called after Firebase login. Creates the Supabase user if missing,
      * otherwise returns the existing row.
      */
-    fun syncAfterLogin(onDone: (Boolean) -> Unit = {}) {
+    fun syncAfterLogin(
+        overrideName: String? = null,
+        overrideSurname: String? = null,
+        onDone: (Boolean) -> Unit = {}
+    ) {
         val fb = FirebaseAuth.getInstance().currentUser
         if (fb == null) {
             _error.value = "No Firebase user signed in"
@@ -39,11 +43,19 @@ class UserViewModel(
             _isLoading.value = true
             _error.value = null
 
-            // Firebase doesn't expose first/last name directly — we split displayName
-            val display = fb.displayName ?: ""
-            val parts = display.split(" ", limit = 2)
-            val firstName = parts.getOrNull(0)?.takeIf { it.isNotBlank() }
-            val lastName = parts.getOrNull(1)?.takeIf { it.isNotBlank() }
+            val firstName: String?
+            val lastName: String?
+
+            if (overrideName != null) {
+                firstName = overrideName.takeIf { it.isNotBlank() }
+                lastName = overrideSurname?.takeIf { it.isNotBlank() }
+            } else {
+                // Firebase doesn't expose first/last name directly — we split displayName
+                val display = fb.displayName ?: ""
+                val parts = display.split(" ", limit = 2)
+                firstName = parts.getOrNull(0)?.takeIf { it.isNotBlank() }
+                lastName = parts.getOrNull(1)?.takeIf { it.isNotBlank() }
+            }
 
             repo.sync(
                 firebaseUid = fb.uid,

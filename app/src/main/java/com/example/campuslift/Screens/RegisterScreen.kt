@@ -14,13 +14,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Auth.AuthState
 import com.example.campuslift.ViewModels.AuthViewModel
+import com.example.campuslift.ViewModels.UserViewModel
 
 @Composable
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
+    var name by remember { mutableStateOf("") }
+    var surname by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -31,7 +35,9 @@ fun RegisterScreen(
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Authenticated) {
-            onRegisterSuccess()
+            userViewModel.syncAfterLogin(overrideName = name, overrideSurname = surname) {
+                onRegisterSuccess()
+            }
         }
     }
 
@@ -55,6 +61,28 @@ fun RegisterScreen(
         )
 
         Spacer(Modifier.height(32.dp))
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it; viewModel.clearError() },
+            label = { Text("First Name") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = surname,
+            onValueChange = { surname = it; viewModel.clearError() },
+            label = { Text("Surname") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
+        )
+
+        Spacer(Modifier.height(16.dp))
 
         OutlinedTextField(
             value = email,
@@ -111,7 +139,7 @@ fun RegisterScreen(
         Spacer(Modifier.height(24.dp))
 
         Button(
-            onClick = { viewModel.register(email, password, confirmPassword) },
+            onClick = { viewModel.register(name, surname, email, password, confirmPassword) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),

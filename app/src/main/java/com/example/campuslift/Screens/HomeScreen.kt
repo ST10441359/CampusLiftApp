@@ -90,7 +90,7 @@ fun HomeScreen(
                 color = Color.White.copy(alpha = 0.8f)
             )
             Text(
-                text = userName,
+                text = currentUser?.name?.takeIf { it.isNotBlank() } ?: userName,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

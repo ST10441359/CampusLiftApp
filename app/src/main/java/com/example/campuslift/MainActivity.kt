@@ -89,9 +89,12 @@ private fun SyncObserver(
     userVm: UserViewModel = viewModel()
 ) {
     val authState by authVm.authState.collectAsState()
+    var hasSynced = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
     LaunchedEffect(authState) {
-        if (authState is AuthState.Authenticated) {
+        if (authState is AuthState.Authenticated && !hasSynced.value) {
+            hasSynced.value = true
+            kotlinx.coroutines.delay(800)
             userVm.syncAfterLogin()
         }
     }

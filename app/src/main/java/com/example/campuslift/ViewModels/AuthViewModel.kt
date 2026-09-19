@@ -58,8 +58,15 @@ class AuthViewModel(
     }
 
     /** Register with full validation. */
-    fun register(email: String, password: String, confirmPassword: String) {
+    /** Register with full validation. */
+    /** Register with full validation. */
+    fun register(name: String, surname: String, email: String, password: String, confirmPassword: String) {
         if (!validateEmailAndPassword(email, password)) return
+
+        if (name.isBlank()) {
+            _uiError.value = "First name is required"
+            return
+        }
 
         if (password != confirmPassword) {
             _uiError.value = "Passwords do not match"
@@ -72,6 +79,14 @@ class AuthViewModel(
         viewModelScope.launch {
             Log.d(TAG, "register flow started")
             val result = repository.register(email.trim(), password)
+            result.onSuccess {
+                val displayName = "$name $surname".trim()
+                val profileUpdate = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                    .setDisplayName(displayName)
+                    .build()
+                com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    ?.updateProfile(profileUpdate)
+            }
             result.onFailure { e ->
                 _uiError.value = mapAuthError(e.message)
                 Log.e(TAG, "register error: ${_uiError.value}")
