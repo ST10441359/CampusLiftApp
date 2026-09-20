@@ -39,24 +39,37 @@ import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.ErrorMessage
 import com.example.campuslift.Components.PassiveBanner
 import com.example.campuslift.ViewModels.BookingViewModel
+import com.example.campuslift.ViewModels.TripViewModel
 import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+
+private fun initials(name: String?, surname: String?): String {
+    val first = name?.trim()?.firstOrNull()?.uppercaseChar()
+    val last = surname?.trim()?.firstOrNull()?.uppercaseChar()
+    return listOfNotNull(first, last).joinToString("").ifBlank { "?" }
+}
 
 @Composable
 fun BookingDetailsScreen(
     bookingId: String,
     onBack: () -> Unit = {},
     onBookingCancelled: () -> Unit = {},
-    bookingViewModel: BookingViewModel = viewModel()
+    bookingViewModel: BookingViewModel = viewModel(),
+    tripViewModel: TripViewModel = viewModel()
 ) {
     val bookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()
     val booking = bookings.find { it.id == bookingId }
+    val trip by tripViewModel.selected.collectAsStateWithLifecycle()
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         bookingViewModel.loadMyBookings()
+    }
+
+    LaunchedEffect(booking?.tripId) {
+        booking?.tripId?.let { tripViewModel.loadTrip(it) }
     }
 
     LaunchedEffect(showBanner) {
@@ -110,17 +123,50 @@ fun BookingDetailsScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "${booking?.fromLocation ?: ""} → ${booking?.toLocation ?: ""}",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "${booking?.seatsRequested ?: 0} seat${if (booking?.seatsRequested == 1) "" else "s"} requested",
-                    color = Color.White.copy(alpha = 0.85f),
-                    fontSize = 13.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    val driver = trip?.driver
+                    val vehicle = trip?.vehicle
+
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color.White.copy(alpha = 0.2f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = initials(driver?.name, driver?.surname),
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = listOfNotNull(driver?.name, driver?.surname)
+                                .joinToString(" ")
+                                .ifBlank { "Driver" },
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        if (vehicle != null) {
+                            Text(
+                                text = listOfNotNull(vehicle.color, vehicle.make, vehicle.model)
+                                    .joinToString(" ") + (vehicle.licensePlate?.let { " · $it" } ?: ""),
+                                color = Color.White.copy(alpha = 0.85f),
+                                fontSize = 12.sp
+                            )
+                        }
+                        Text(
+                            text = "${booking?.fromLocation ?: ""} → ${booking?.toLocation ?: ""}",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 12.sp
+                        )
+                    }
+                }
             }
 
             Column(

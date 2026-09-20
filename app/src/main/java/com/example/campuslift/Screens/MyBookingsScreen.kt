@@ -1,65 +1,93 @@
 package com.example.campuslift.Screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.campuslift.Components.BookingCard
+import com.example.campuslift.Components.CampusLiftTopBar
+import com.example.campuslift.Components.EmptyState
 import com.example.campuslift.ViewModels.BookingViewModel
-import androidx.compose.foundation.layout.width
+import java.time.OffsetDateTime
+
 @Composable
 fun MyBookingsScreen(
-    onBack: () -> Unit,
-    vm: BookingViewModel = viewModel()
+    onBack: () -> Unit = {},
+    onBookingSelected: (String) -> Unit = {},
+    bookingViewModel: BookingViewModel = viewModel()
 ) {
-    val bookings by vm.myBookings.collectAsState()
-    val loading by vm.isLoading.collectAsState()
-    val error by vm.error.collectAsState()
+    var selectedTab by remember { mutableStateOf(0) }
+    val bookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) { vm.loadMyBookings() }
+    LaunchedEffect(Unit) {
+        bookingViewModel.loadMyBookings()
+    }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onBack) { Text("← Back") }
-            Spacer(Modifier.width(8.dp))
-            Text("My Bookings", style = MaterialTheme.typography.titleLarge)
+    val now = OffsetDateTime.now()
+    val visibleBookings = bookings.filter { booking ->
+        val isPast = try {
+            booking.eventTime?.let { OffsetDateTime.parse(it).isBefore(now) } ?: false
+        } catch (e: Exception) {
+            false
         }
-        Spacer(Modifier.height(8.dp))
+        val isCancelled = booking.cancellationTime != null
+        if (selectedTab == 0) !isPast && !isCancelled else isPast || isCancelled
+    }
 
-        if (loading) CircularProgressIndicator()
-        error?.let { Text("Error: $it") }
+    Scaffold(
+        topBar = {
+            CampusLiftTopBar(title = "Bookings", onBack = onBack)
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            TabRow(selectedTabIndex = selectedTab) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    text = { Text("Upcoming") }
+                )
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    text = { Text("Past") }
+                )
+            }
 
-        LazyColumn {
-            items(bookings) { b ->
-                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Column(Modifier.padding(12.dp)) {
-                        Text("${b.fromLocation} → ${b.toLocation}")
-                        Text("Status: ${b.approval}")
-                        Text("Seats: ${b.seatsRequested}")
-                        Text("R${b.pricePerSeat} / seat")
-                        if (b.cancellationTime == null) {
-                            Spacer(Modifier.height(8.dp))
-                            Button(onClick = { vm.cancelBooking(b.id) }) {
-                                Text("Cancel")
-                            }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (visibleBookings.isEmpty()) {
+                    EmptyState(
+                        title = "No bookings here",
+                        subtitle = "Book or offer a ride to see it here"
+                    )
+                } else {
+                    LazyColumn {
+                        items(visibleBookings) { booking ->
+                            BookingCard(booking, onClick = { onBookingSelected(booking.id) })
                         }
                     }
                 }

@@ -45,6 +45,12 @@ import kotlinx.coroutines.delay
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
+private fun initials(name: String?, surname: String?): String {
+    val first = name?.trim()?.firstOrNull()?.uppercaseChar()
+    val last = surname?.trim()?.firstOrNull()?.uppercaseChar()
+    return listOfNotNull(first, last).joinToString("").ifBlank { "?" }
+}
+
 @Composable
 fun RideDetailsScreen(
     tripId: String,
@@ -105,28 +111,46 @@ fun RideDetailsScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val driver = trip?.driver
+                    val vehicle = trip?.vehicle
+
                     Box(
                         modifier = Modifier
                             .size(56.dp)
                             .background(Color.White.copy(alpha = 0.2f), CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "🚗", fontSize = 24.sp)
+                        Text(
+                            text = initials(driver?.name, driver?.surname),
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(12.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${trip?.fromLocation ?: ""} → ${trip?.toLocation ?: ""}",
+                            text = listOfNotNull(driver?.name, driver?.surname)
+                                .joinToString(" ")
+                                .ifBlank { "Driver" },
                             color = Color.White,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
+                        if (vehicle != null) {
+                            Text(
+                                text = listOfNotNull(vehicle.color, vehicle.make, vehicle.model)
+                                    .joinToString(" ") + (vehicle.licensePlate?.let { " · $it" } ?: ""),
+                                color = Color.White.copy(alpha = 0.85f),
+                                fontSize = 12.sp
+                            )
+                        }
                         Text(
                             text = "${trip?.seatsRemaining ?: 0} of ${trip?.totalSeats ?: 0} seats available",
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontSize = 13.sp
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 12.sp
                         )
                     }
                 }

@@ -21,7 +21,7 @@ import com.example.campuslift.Screens.HomeScreen
 import com.example.campuslift.Screens.LiftDetailsScreen
 import com.example.campuslift.Screens.LiftsScreen
 import com.example.campuslift.Screens.LoginScreen
-import com.example.campuslift.Screens.MyRidesScreen
+import com.example.campuslift.Screens.MyBookingsScreen
 import com.example.campuslift.Screens.RegisterScreen
 import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
@@ -129,7 +129,7 @@ fun AppNav() {
             }
 
             composable("myRides") {
-                MyRidesScreen(
+                MyBookingsScreen(
                     onBack = { navController.popBackStack() },
                     onBookingSelected = { bookingId -> navController.navigate("bookingDetails/$bookingId") }
                 )
