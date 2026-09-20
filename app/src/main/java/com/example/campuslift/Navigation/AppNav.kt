@@ -27,6 +27,7 @@ import com.example.campuslift.Screens.RegisterScreen
 import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 private val bottomNavRoutes = setOf("home", "myRides", "lifts", "alerts", "settings")
 
@@ -179,8 +180,11 @@ fun AppNav() {
             }
 
             composable("settings") {
+                val auth = FirebaseAuth.getInstance()
+                val currentUid = auth.currentUser?.uid ?: "guest"
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
+                    settingsViewModel = viewModel(key = "settings_$currentUid"),
                     onSignOut = {
                         authViewModel.signOut()
                         navController.navigate("login") {

@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -101,7 +102,7 @@ fun RideDetailsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF1A237E))
+                    .background(Color(0xFF283593))
                     .padding(16.dp)
             ) {
                 IconButton(onClick = onBack) {
@@ -204,7 +205,7 @@ fun RideDetailsScreen(
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -213,7 +214,7 @@ fun RideDetailsScreen(
                             text = "TRIP DETAILS",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -222,12 +223,12 @@ fun RideDetailsScreen(
                             Box(
                                 modifier = Modifier
                                     .size(10.dp)
-                                    .background(Color(0xFF1A237E), CircleShape)
+                                    .background(Color(0xFF283593), CircleShape)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(text = trip?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.Gray)
+                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
 
@@ -242,13 +243,13 @@ fun RideDetailsScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(text = trip?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Drop-off", fontSize = 12.sp, color = Color.Gray)
+                                Text(text = "Drop-off", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(text = formattedDate, fontSize = 12.sp, color = Color.Gray)
+                        Text(text = formattedDate, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                         if (!trip?.description.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(12.dp))
@@ -256,14 +257,14 @@ fun RideDetailsScreen(
                                 text = "NOTES",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = trip?.description ?: "",
                                 fontSize = 13.sp,
                                 fontStyle = FontStyle.Italic,
-                                color = Color.DarkGray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -273,7 +274,7 @@ fun RideDetailsScreen(
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -283,13 +284,17 @@ fun RideDetailsScreen(
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Price per seat", fontSize = 13.sp, color = Color.Gray)
+                        Text(
+                            text = "Price per seat",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = "R${trip?.pricePerSeat ?: 0}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1A237E)
+                            color = Color(0xFF283593)
                         )
                     }
                 }
@@ -319,7 +324,6 @@ fun RideDetailsScreen(
                             }
                         }
                     )
-
                 }
             }
         }

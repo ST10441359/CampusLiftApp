@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -122,6 +123,7 @@ fun BookingDetailsScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
+            // Navy header – brand colour kept as-is
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -200,7 +202,7 @@ fun BookingDetailsScreen(
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -209,7 +211,7 @@ fun BookingDetailsScreen(
                             text = "TRIP DETAILS",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -222,8 +224,16 @@ fun BookingDetailsScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(text = booking?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.Gray)
+                                Text(
+                                    text = booking?.fromLocation ?: "",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "Pickup · $formattedTime",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
 
@@ -237,14 +247,26 @@ fun BookingDetailsScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text(text = booking?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Drop-off", fontSize = 12.sp, color = Color.Gray)
+                                Text(
+                                    text = booking?.toLocation ?: "",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "Drop-off",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(text = formattedDate, fontSize = 12.sp, color = Color.Gray)
+                        Text(
+                            text = formattedDate,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
@@ -252,7 +274,7 @@ fun BookingDetailsScreen(
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -262,13 +284,17 @@ fun BookingDetailsScreen(
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Price per seat", fontSize = 13.sp, color = Color.Gray)
+                        Text(
+                            text = "Price per seat",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = "R${booking?.pricePerSeat ?: 0}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1A237E)
+                            color = Color(0xFF1A237E)          // brand navy kept
                         )
                     }
                 }

@@ -24,6 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -187,7 +188,7 @@ fun LiftDetailsScreen(
                 if (pendingRequests.isNotEmpty()) {
                     Card(
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -196,7 +197,7 @@ fun LiftDetailsScreen(
                                 text = "PENDING REQUESTS (${pendingRequests.size})",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(modifier = Modifier.height(10.dp))
@@ -241,7 +242,7 @@ fun LiftDetailsScreen(
                 if (approvedPassengers.isNotEmpty() && trip?.isComplete != true) {
                     Card(
                         shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -250,7 +251,7 @@ fun LiftDetailsScreen(
                                 text = "APPROVED PASSENGERS (${approvedPassengers.size})",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
 
                             Spacer(modifier = Modifier.height(10.dp))
@@ -269,7 +270,7 @@ fun LiftDetailsScreen(
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -278,7 +279,7 @@ fun LiftDetailsScreen(
                             text = "TRIP DETAILS",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
@@ -292,7 +293,7 @@ fun LiftDetailsScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(text = trip?.fromLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = Color.DarkGray)
+                                Text(text = "Pickup · $formattedTime", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
 
@@ -307,13 +308,13 @@ fun LiftDetailsScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(text = trip?.toLocation ?: "", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Text(text = "Drop-off", fontSize = 12.sp, color = Color.DarkGray)
+                                Text(text = "Drop-off", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Text(text = formattedDate, fontSize = 12.sp, color = Color.DarkGray)
+                        Text(text = formattedDate, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                         if (!trip?.description.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(12.dp))
@@ -321,14 +322,14 @@ fun LiftDetailsScreen(
                                 text = "NOTES",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.Black
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = trip?.description ?: "",
                                 fontSize = 13.sp,
                                 fontStyle = FontStyle.Italic,
-                                color = Color.DarkGray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -338,7 +339,7 @@ fun LiftDetailsScreen(
 
                 Card(
                     shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -348,7 +349,7 @@ fun LiftDetailsScreen(
                             .padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Price per seat", fontSize = 13.sp, color = Color.Black)
+                        Text(text = "Price per seat", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = "R${trip?.pricePerSeat ?: 0}",
@@ -377,7 +378,6 @@ fun LiftDetailsScreen(
                                     if (success) {
                                         showCompleteBanner = true
                                     } else {
-                                        // Pull the specific error from the trip view model if populated
                                         errorMessage = tripViewModel.error.value ?: "Failed to complete trip. Try again."
                                     }
                                 }
@@ -460,7 +460,7 @@ private fun PendingRequestRow(
         Text(
             text = "${request.seatsRequested} seat${if (request.seatsRequested == 1) "" else "s"} requested",
             fontSize = 12.sp,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -505,7 +505,7 @@ private fun ApprovedPassengerRow(passenger: BookingWithTripDto) {
             Text(
                 text = "${passenger.seatsRequested} seat${if (passenger.seatsRequested == 1) "" else "s"}",
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 

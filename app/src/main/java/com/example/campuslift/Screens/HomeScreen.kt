@@ -26,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -102,16 +103,16 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF1A237E))
+                .background(Color(0xFF283593))
                 .padding(16.dp)
         ) {
             Text(
-                text = "Good morning \uD83D\uDC4B",
+                text = "Good morning 👋",
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.8f)
             )
@@ -126,7 +127,7 @@ fun HomeScreen(
 
             Card(
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -181,7 +182,7 @@ fun HomeScreen(
                 text = "${otherPeoplesTrips.size} rides available",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A237E)
+                color = Color(0xFF283593)
             )
         }
 
@@ -263,7 +264,7 @@ private fun driverInitials(name: String?, surname: String?): String {
 private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -275,7 +276,7 @@ private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(Color(0xFF1A237E), CircleShape),
+                        .background(Color(0xFF283593), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -295,20 +296,20 @@ private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                             .ifBlank { "Driver" },
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E)
+                        color = Color(0xFF283593)
                     )
                     if (trip.vehicle != null) {
                         Text(
                             text = listOfNotNull(trip.vehicle.color, trip.vehicle.make, trip.vehicle.model)
                                 .joinToString(" "),
                             fontSize = 12.sp,
-                            color = Color.DarkGray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         trip.vehicle.licensePlate?.let { plate ->
                             Text(
                                 text = plate,
                                 fontSize = 11.sp,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -321,7 +322,7 @@ private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                 text = "${trip.fromLocation} → ${trip.toLocation}",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A237E)
+                color = Color(0xFF283593)
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -329,7 +330,7 @@ private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
             Text(
                 text = formatEventTime(trip.eventTime),
                 fontSize = 13.sp,
-                color = Color.DarkGray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -356,7 +357,7 @@ private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     text = "R${trip.pricePerSeat}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E)
+                    color = Color(0xFF283593)
                 )
             }
         }

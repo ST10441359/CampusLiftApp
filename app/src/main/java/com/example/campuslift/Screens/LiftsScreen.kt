@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -74,6 +75,7 @@ fun LiftsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             TabRow(selectedTabIndex = selectedTab) {
                 Tab(
@@ -144,7 +146,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
 
     Card(
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -172,19 +174,19 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                         text = "You're driving",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E)
+                        color = Color(0xFF1A237E)                  // brand navy kept
                     )
                     Text(
                         text = "${trip.fromLocation} → ${trip.toLocation}",
                         fontSize = 13.sp,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Text(
                     text = "›",
                     fontSize = 18.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -194,21 +196,21 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     text = trip.description,
                     fontSize = 12.sp,
                     fontStyle = FontStyle.Italic,
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             if (pendingCount > 0) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
-                    color = Color(0xFFFFF3E0),
+                    color = Color(0xFFFFF3E0),                     // semantic – kept
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = "🔔  $pendingCount pending request${if (pendingCount == 1) "" else "s"}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE65100),
+                        color = Color(0xFFE65100),                 // semantic – kept
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
@@ -225,17 +227,17 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                 Text(
                     text = formatEventDate(trip.eventTime),
                     fontSize = 13.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
 
                 val statusColor = if (trip.isComplete) {
-                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)         // semantic – kept
                 } else if (trip.seatsRemaining == 0) {
-                    Color(0xFFFFF3E0) to Color(0xFFE65100)
+                    Color(0xFFFFF3E0) to Color(0xFFE65100)         // semantic – kept
                 } else {
-                    Color(0xFFE3F2FD) to Color(0xFF1565C0)
+                    Color(0xFFE3F2FD) to Color(0xFF1565C0)         // semantic – kept
                 }
 
                 Surface(
@@ -268,7 +270,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                 Text(
                     text = formatEventTime(trip.eventTime),
                     fontSize = 13.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -277,7 +279,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     text = "R${trip.pricePerSeat}",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E)
+                    color = Color(0xFF1A237E)                      // brand navy kept
                 )
             }
         }

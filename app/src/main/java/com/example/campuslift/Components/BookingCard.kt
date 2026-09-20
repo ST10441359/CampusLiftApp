@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -77,7 +78,7 @@ fun BookingCard(
 
     Card(
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -109,19 +110,19 @@ fun BookingCard(
                             .ifBlank { "Driver" },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E)
+                        color = Color(0xFF1A237E)                  // kept – brand navy
                     )
                     Text(
                         text = "${booking.fromLocation} → ${booking.toLocation}",
                         fontSize = 13.sp,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     if (vehicle != null) {
                         Text(
                             text = listOfNotNull(vehicle.color, vehicle.make, vehicle.model)
                                 .joinToString(" ") + (vehicle.licensePlate?.let { " · $it" } ?: ""),
                             fontSize = 12.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -129,7 +130,7 @@ fun BookingCard(
                 Text(
                     text = "›",
                     fontSize = 18.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -142,7 +143,7 @@ fun BookingCard(
                 Text(
                     text = "📅 ${formatBookingDate(booking.eventTime)}",
                     fontSize = 13.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -182,7 +183,7 @@ fun BookingCard(
                 Text(
                     text = "🕐 ${formatBookingTime(booking.eventTime)}",
                     fontSize = 13.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
