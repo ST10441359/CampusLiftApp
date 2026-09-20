@@ -105,16 +105,27 @@ fun CreateRideScreen(
         val hour = selectedHour ?: return null
         val minute = selectedMinute ?: return null
 
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-        calendar.timeInMillis = dateMillis
-        calendar.set(Calendar.HOUR_OF_DAY, hour)
-        calendar.set(Calendar.MINUTE, minute)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
+        // 1. First interpret the chosen components using the device's local timezone
+        val localCalendar = Calendar.getInstance()
+        localCalendar.timeInMillis = dateMillis
+        
+        // Extract the exact year, month, and day components from the Picker date selection
+        val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utcCalendar.timeInMillis = dateMillis
+        
+        // 2. Lock them down into a clean local calendar instance to preserve local clock face hours
+        localCalendar.set(Calendar.YEAR, utcCalendar.get(Calendar.YEAR))
+        localCalendar.set(Calendar.MONTH, utcCalendar.get(Calendar.MONTH))
+        localCalendar.set(Calendar.DAY_OF_MONTH, utcCalendar.get(Calendar.DAY_OF_MONTH))
+        localCalendar.set(Calendar.HOUR_OF_DAY, hour)
+        localCalendar.set(Calendar.MINUTE, minute)
+        localCalendar.set(Calendar.SECOND, 0)
+        localCalendar.set(Calendar.MILLISECOND, 0)
 
+        // 3. Output the exact moment as an ISO 8601 string converted cleanly to UTC
         val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
         isoFormat.timeZone = TimeZone.getTimeZone("UTC")
-        return isoFormat.format(calendar.time)
+        return isoFormat.format(localCalendar.time)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

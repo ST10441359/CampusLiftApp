@@ -13,6 +13,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.campuslift.Auth.AuthState
+import com.example.campuslift.Components.ActiveTripBanner
 import com.example.campuslift.Screens.AddVehicleScreen
 import com.example.campuslift.Screens.AlertsScreen
 import com.example.campuslift.Screens.BookingDetailsScreen
@@ -47,7 +48,7 @@ fun AppNav() {
         bottomBar = {
             androidx.compose.foundation.layout.Column {
                 if (authState is AuthState.Authenticated) {
-                    com.example.campuslift.Components.ActiveTripBanner()
+                    ActiveTripBanner(currentRoute = currentRoute)
                 }
                 if (currentRoute in bottomNavRoutes) {
                     BottomNavBar(navController = navController)

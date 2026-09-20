@@ -40,8 +40,9 @@ private data class ActiveTrip(
 
 @Composable
 fun ActiveTripBanner(
-    tripViewModel: TripViewModel = viewModel(key = "activeTripBanner_trips"),
-    bookingViewModel: BookingViewModel = viewModel(key = "activeTripBanner_bookings")
+    currentRoute: String? = null,
+    tripViewModel: TripViewModel = viewModel(),
+    bookingViewModel: BookingViewModel = viewModel()
 ) {
     val myTrips by tripViewModel.trips.collectAsStateWithLifecycle()
     val myBookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()
@@ -49,7 +50,8 @@ fun ActiveTripBanner(
     var activeTrip by remember { mutableStateOf<ActiveTrip?>(null) }
     var expanded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    // Re-fetch active trips and bookings whenever the user changes routes/tabs
+    LaunchedEffect(currentRoute) {
         tripViewModel.loadMine()
         bookingViewModel.loadMyBookings()
     }

@@ -39,15 +39,11 @@ fun MyBookingsScreen(
         bookingViewModel.loadMyBookings()
     }
 
-    val now = OffsetDateTime.now()
     val visibleBookings = bookings.filter { booking ->
-        val isPast = try {
-            booking.eventTime?.let { OffsetDateTime.parse(it).isBefore(now) } ?: false
-        } catch (e: Exception) {
-            false
-        }
-        val isCancelled = booking.cancellationTime != null
-        if (selectedTab == 0) !isPast && !isCancelled else isPast || isCancelled
+        if (booking.cancellationTime != null) return@filter false
+
+        val isRejected = booking.approval == "rejected"
+        if (selectedTab == 0) !isRejected else isRejected
     }
 
     Scaffold(
