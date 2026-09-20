@@ -232,6 +232,8 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
 
                 val statusColor = if (trip.isComplete) {
                     Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                } else if (trip.seatsRemaining == 0) {
+                    Color(0xFFFFF3E0) to Color(0xFFE65100)
                 } else {
                     Color(0xFFE3F2FD) to Color(0xFF1565C0)
                 }
@@ -241,7 +243,13 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = if (trip.isComplete) "•  Completed" else "•  ${trip.seatsRemaining} of ${trip.totalSeats} seats left",
+                        text = if (trip.isComplete) {
+                            "•  Completed"
+                        } else if (trip.seatsRemaining == 0) {
+                            "•  In Progress"
+                        } else {
+                            "•  ${trip.seatsRemaining} of ${trip.totalSeats} seats left"
+                        },
                         fontSize = 12.sp,
                         color = statusColor.second,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

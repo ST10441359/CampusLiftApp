@@ -1,6 +1,8 @@
 package com.example.campuslift.Screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -152,10 +154,13 @@ fun LiftDetailsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
                 val statusColor = if (trip?.isComplete == true) {
                     Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                } else if (trip?.seatsRemaining == 0) {
+                    Color(0xFFFFF3E0) to Color(0xFFE65100)
                 } else {
                     Color(0xFFE3F2FD) to Color(0xFF1565C0)
                 }
@@ -166,7 +171,13 @@ fun LiftDetailsScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 ) {
                     Text(
-                        text = if (trip?.isComplete == true) "•  Completed" else "•  ${trip?.seatsRemaining ?: 0} seats remaining",
+                        text = if (trip?.isComplete == true) {
+                            "•  Completed"
+                        } else if (trip?.seatsRemaining == 0) {
+                            "•  In Progress"
+                        } else {
+                            "•  ${trip?.seatsRemaining ?: 0} seats remaining"
+                        },
                         fontSize = 13.sp,
                         color = statusColor.second,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)

@@ -16,10 +16,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,9 +51,13 @@ import com.example.campuslift.Data.dto.TripWithAvailabilityDto
 import com.example.campuslift.ViewModels.TripViewModel
 import com.example.campuslift.ViewModels.UserViewModel
 import com.example.campuslift.ViewModels.VehicleViewModel
+import java.text.SimpleDateFormat
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import java.util.TimeZone
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     userName: String = "Student",
@@ -59,7 +73,8 @@ fun HomeScreen(
 ) {
     var fromLocation by remember { mutableStateOf("") }
     var toLocation by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
+    var selectedDateMillis by remember { mutableStateOf<Long?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
     val vehicles by vehicleViewModel.vehicles.collectAsStateWithLifecycle()
     val trips by tripViewModel.trips.collectAsStateWithLifecycle()
@@ -72,6 +87,17 @@ fun HomeScreen(
     }
 
     val otherPeoplesTrips = trips.filter { it.driverId != currentUser?.id && it.seatsRemaining > 0 }
+
+    val displayDate = selectedDateMillis?.let {
+        SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(it)
+    } ?: "Any date"
+
+    fun buildIsoDate(): String? {
+        val millis = selectedDateMillis ?: return null
+        val isoFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        isoFormat.timeZone = TimeZone.getTimeZone("UTC")
+        return isoFormat.format(millis)
+    }
 
     Column(
         modifier = Modifier
@@ -115,10 +141,19 @@ fun HomeScreen(
                         onValueChange = { toLocation = it },
                         label = "To"
                     )
-                    CampusLiftTextField(
-                        value = date,
-                        onValueChange = { date = it },
-                        label = "Date (YYYY-MM-DD)"
+
+                    OutlinedTextField(
+                        value = displayDate,
+                        onValueChange = {},
+                        readOnly = true,
+                        shape = RoundedCornerShape(12.dp),
+                        label = { Text("Date") },
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(Icons.Filled.CalendarToday, contentDescription = "Pick date")
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -129,7 +164,7 @@ fun HomeScreen(
                             tripViewModel.search(
                                 from = fromLocation.ifBlank { null },
                                 to = toLocation.ifBlank { null },
-                                date = date.ifBlank { null }
+                                date = buildIsoDate()
                             )
                         }
                     )
@@ -182,6 +217,28 @@ fun HomeScreen(
                     }
                 }
             )
+        }
+    }
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    selectedDateMillis = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 }
