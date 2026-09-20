@@ -367,15 +367,22 @@ fun LiftDetailsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (trip?.isComplete != true) {
+                    val allPickupsConfirmed = approvedPassengers.isNotEmpty() && approvedPassengers.all { it.pickupConfirmed }
+
                     CampusLiftButton(
                         text = "Complete Trip",
                         onClick = {
-                            tripViewModel.complete(tripId) { success ->
-                                if (success) {
-                                    showCompleteBanner = true
-                                } else {
-                                    errorMessage = "Failed to complete trip. Try again."
+                            if (allPickupsConfirmed) {
+                                tripViewModel.complete(tripId) { success ->
+                                    if (success) {
+                                        showCompleteBanner = true
+                                    } else {
+                                        // Pull the specific error from the trip view model if populated
+                                        errorMessage = tripViewModel.error.value ?: "Failed to complete trip. Try again."
+                                    }
                                 }
+                            } else {
+                                errorMessage = "Cannot complete trip yet. Passengers must tap 'Confirm Pickup' on their app once boarded."
                             }
                         }
                     )
@@ -392,9 +399,12 @@ fun LiftDetailsScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
                     ) {
-                        Text("Cancel Trip")
+                        Text("Cancel Trip", fontSize = 16.sp)
                     }
                 }
             }
