@@ -1,6 +1,5 @@
 package com.example.campuslift.Screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,56 +31,64 @@ import com.example.campuslift.Components.LanguageDropdown
 import com.example.campuslift.Components.SettingsClickRow
 import com.example.campuslift.Components.SettingsToggleRow
 import com.example.campuslift.Components.ValidationUtils
+import com.example.campuslift.Data.dto.UpdateVehicleRequest
 import com.example.campuslift.ViewModels.SettingsViewModel
+import com.example.campuslift.ViewModels.UserViewModel
+import com.example.campuslift.ViewModels.VehicleViewModel
 
-/**
- * CampusLift Settings screen.
- * Toggles + language auto-save. Text fields save when Save is tapped.
- * Shows a Toast confirmation when settings are saved.
- *
- * Author: Keshvir Parthab (ST10451537)
- */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit = {},
     onSignOut: () -> Unit = {},
-    settingsViewModel: SettingsViewModel = viewModel()
+    settingsViewModel: SettingsViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel(),
+    vehicleViewModel: VehicleViewModel = viewModel()
 ) {
-
-    val TAG = "SettingsScreen"
-    Log.d(TAG, "Settings screen opened")
-
     val context = LocalContext.current
 
-    // Auto-saved settings
+    val currentUser by userViewModel.user.collectAsStateWithLifecycle()
+    val vehicles by vehicleViewModel.vehicles.collectAsStateWithLifecycle()
+    val myVehicle = vehicles.firstOrNull()
+
+    LaunchedEffect(Unit) {
+        userViewModel.loadMe()
+        vehicleViewModel.loadVehicles()
+    }
+
     val darkMode by settingsViewModel.darkMode.collectAsStateWithLifecycle()
     val biometric by settingsViewModel.biometricEnabled.collectAsStateWithLifecycle()
     val notifications by settingsViewModel.notificationsEnabled.collectAsStateWithLifecycle()
     val language by settingsViewModel.language.collectAsStateWithLifecycle()
 
-    // Persisted text values
     val savedPickup by settingsViewModel.defaultPickup.collectAsStateWithLifecycle()
     val savedContact by settingsViewModel.emergencyContact.collectAsStateWithLifecycle()
-    val savedVehicle by settingsViewModel.vehicle.collectAsStateWithLifecycle()
-    val savedPayment by settingsViewModel.paymentMethod.collectAsStateWithLifecycle()
 
-    // Local editable copies — user types here, Save commits them
     var editPickup by remember { mutableStateOf("") }
     var editContact by remember { mutableStateOf("") }
-    var editVehicle by remember { mutableStateOf("") }
-    var editPayment by remember { mutableStateOf("") }
 
-    // Sync local edits with persisted values when they first load
     LaunchedEffect(savedPickup) { editPickup = savedPickup }
     LaunchedEffect(savedContact) { editContact = savedContact }
-    LaunchedEffect(savedVehicle) { editVehicle = savedVehicle }
-    LaunchedEffect(savedPayment) { editPayment = savedPayment }
 
-    // Validation errors
     var pickupError by remember { mutableStateOf<String?>(null) }
     var contactError by remember { mutableStateOf<String?>(null) }
+
+    var editMake by remember { mutableStateOf("") }
+    var editModel by remember { mutableStateOf("") }
+    var editYear by remember { mutableStateOf("") }
+    var editColor by remember { mutableStateOf("") }
+    var editPlate by remember { mutableStateOf("") }
+    var editSeats by remember { mutableStateOf("") }
+
+    LaunchedEffect(myVehicle) {
+        editMake = myVehicle?.make ?: ""
+        editModel = myVehicle?.model ?: ""
+        editYear = myVehicle?.year?.toString() ?: ""
+        editColor = myVehicle?.color ?: ""
+        editPlate = myVehicle?.licensePlate ?: ""
+        editSeats = myVehicle?.seats?.toString() ?: ""
+    }
+
     var vehicleError by remember { mutableStateOf<String?>(null) }
-    var paymentError by remember { mutableStateOf<String?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -97,23 +104,18 @@ fun SettingsScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
 
-            // --- Account header ---
             Text(
-                text = "Nomvula Khumalo",
+                text = listOfNotNull(currentUser?.name, currentUser?.surname)
+                    .joinToString(" ")
+                    .ifBlank { "Student" },
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "nomvula@ukzn.ac.za",
+                text = currentUser?.email ?: "",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "⭐ 4.9   |   23 Trips   |   Verified Student",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -125,7 +127,6 @@ fun SettingsScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- Language (auto-saves) ---
             SettingsClickRow(
                 label = "Language",
                 value = "",
@@ -133,49 +134,33 @@ fun SettingsScreen(
                 trailingContent = {
                     LanguageDropdown(
                         currentLanguage = language,
-                        onLanguageSelected = {
-                            Log.d(TAG, "Language changed to $it")
-                            settingsViewModel.setLanguage(it)
-                        }
+                        onLanguageSelected = { settingsViewModel.setLanguage(it) }
                     )
                 }
             )
             Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
-            // --- Dark Mode (auto-saves) ---
             SettingsToggleRow(
                 label = "Dark Mode",
                 checked = darkMode,
-                onCheckedChange = {
-                    Log.d(TAG, "Dark Mode toggled to $it")
-                    settingsViewModel.setDarkMode(it)
-                }
+                onCheckedChange = { settingsViewModel.setDarkMode(it) }
             )
             Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
-            // --- Biometric (auto-saves) ---
             SettingsToggleRow(
                 label = "Biometric Login",
                 checked = biometric,
-                onCheckedChange = {
-                    Log.d(TAG, "Biometric toggled to $it")
-                    settingsViewModel.setBiometric(it)
-                }
+                onCheckedChange = { settingsViewModel.setBiometric(it) }
             )
             Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
-            // --- Notifications (auto-saves) ---
             SettingsToggleRow(
                 label = "Notifications",
                 checked = notifications,
-                onCheckedChange = {
-                    Log.d(TAG, "Notifications toggled to $it")
-                    settingsViewModel.setNotifications(it)
-                }
+                onCheckedChange = { settingsViewModel.setNotifications(it) }
             )
             Divider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
 
-            // --- Default Pickup (editable field) ---
             CampusLiftTextField(
                 value = editPickup,
                 onValueChange = {
@@ -186,7 +171,6 @@ fun SettingsScreen(
                 errorMessage = pickupError
             )
 
-            // --- Emergency Contact (editable field) ---
             CampusLiftTextField(
                 value = editContact,
                 onValueChange = {
@@ -197,54 +181,111 @@ fun SettingsScreen(
                 errorMessage = contactError
             )
 
-            // --- My Vehicle (editable field) ---
-            CampusLiftTextField(
-                value = editVehicle,
-                onValueChange = {
-                    editVehicle = it
-                    vehicleError = ValidationUtils.validateRequired(it, "Vehicle")
-                },
-                label = "My Vehicle",
-                errorMessage = vehicleError
+            SettingsClickRow(
+                label = "Payment Method",
+                value = "Cash",
+                onClick = { }
             )
 
-            // --- Payment Method (editable field) ---
-            CampusLiftTextField(
-                value = editPayment,
-                onValueChange = {
-                    editPayment = it
-                    paymentError = ValidationUtils.validateRequired(it, "Payment method")
-                },
-                label = "Payment Method",
-                errorMessage = paymentError
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "MY VEHICLE",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (myVehicle == null) {
+                Text(
+                    text = "No vehicle added yet.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            } else {
+                CampusLiftTextField(
+                    value = editMake,
+                    onValueChange = { editMake = it },
+                    label = "Make"
+                )
+                CampusLiftTextField(
+                    value = editModel,
+                    onValueChange = { editModel = it },
+                    label = "Model"
+                )
+                CampusLiftTextField(
+                    value = editYear,
+                    onValueChange = { editYear = it },
+                    label = "Year"
+                )
+                CampusLiftTextField(
+                    value = editColor,
+                    onValueChange = { editColor = it },
+                    label = "Color"
+                )
+                CampusLiftTextField(
+                    value = editPlate,
+                    onValueChange = { editPlate = it },
+                    label = "License Plate"
+                )
+                CampusLiftTextField(
+                    value = editSeats,
+                    onValueChange = { editSeats = it },
+                    label = "Seats",
+                    errorMessage = vehicleError
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                CampusLiftButton(
+                    text = "Save Vehicle",
+                    onClick = {
+                        val seatsInt = editSeats.toIntOrNull()
+                        val yearInt = editYear.toIntOrNull()
+
+                        if (seatsInt == null || seatsInt <= 0) {
+                            vehicleError = "Enter a valid number of seats"
+                        } else {
+                            vehicleError = null
+                            vehicleViewModel.update(
+                                myVehicle.id,
+                                UpdateVehicleRequest(
+                                    make = editMake,
+                                    model = editModel,
+                                    year = yearInt,
+                                    color = editColor,
+                                    licensePlate = editPlate,
+                                    seats = seatsInt
+                                )
+                            ) { success ->
+                                if (success) {
+                                    Toast.makeText(context, "Vehicle updated", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Failed to update vehicle", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Save button (commits the 4 editable fields) ---
             CampusLiftButton(
                 text = "Save Settings",
                 onClick = {
                     val e1 = ValidationUtils.validateRequired(editPickup, "Pickup location")
                     val e2 = ValidationUtils.validatePhoneNumber(editContact)
-                    val e3 = ValidationUtils.validateRequired(editVehicle, "Vehicle")
-                    val e4 = ValidationUtils.validateRequired(editPayment, "Payment method")
 
                     pickupError = e1
                     contactError = e2
-                    vehicleError = e3
-                    paymentError = e4
 
-                    if (e1 == null && e2 == null && e3 == null && e4 == null) {
-                        Log.d(TAG, "Saving all editable settings")
+                    if (e1 == null && e2 == null) {
                         settingsViewModel.setDefaultPickup(editPickup)
                         settingsViewModel.setEmergencyContact(editContact)
-                        settingsViewModel.setVehicle(editVehicle)
-                        settingsViewModel.setPaymentMethod(editPayment)
-
                         Toast.makeText(context, "Settings saved", Toast.LENGTH_SHORT).show()
                     } else {
-                        Log.w(TAG, "Save blocked — fix errors first")
                         Toast.makeText(context, "Please fix the errors first", Toast.LENGTH_SHORT).show()
                     }
                 }

@@ -172,7 +172,9 @@ fun AppNav() {
             }
 
             composable("alerts") {
-                AlertsScreen()
+                AlertsScreen(
+                    onBack = { navController.navigate("home") }
+                )
             }
 
             composable("settings") {

@@ -36,6 +36,7 @@ import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.EmptyState
 import com.example.campuslift.Data.dto.NotificationDto
 import com.example.campuslift.ViewModels.NotificationViewModel
+import com.example.campuslift.ViewModels.SettingsViewModel
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -57,19 +58,24 @@ private fun formatTimestamp(raw: String?): String {
 
 @Composable
 fun AlertsScreen(
-    notificationViewModel: NotificationViewModel = viewModel()
+    onBack: () -> Unit = {},
+    notificationViewModel: NotificationViewModel = viewModel(),
+    settingsViewModel: SettingsViewModel = viewModel()
 ) {
     val notifications by notificationViewModel.notifications.collectAsStateWithLifecycle()
     val unreadCount by notificationViewModel.unreadCount.collectAsStateWithLifecycle()
+    val notificationsEnabled by settingsViewModel.notificationsEnabled.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        notificationViewModel.load()
-        notificationViewModel.refreshUnreadCount()
+    LaunchedEffect(notificationsEnabled) {
+        if (notificationsEnabled) {
+            notificationViewModel.load()
+            notificationViewModel.refreshUnreadCount()
+        }
     }
 
     Scaffold(
         topBar = {
-            CampusLiftTopBar(title = "Alerts")
+            CampusLiftTopBar(title = "Alerts", onBack = onBack)
         }
     ) { padding ->
         Column(
@@ -77,7 +83,7 @@ fun AlertsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (unreadCount > 0) {
+            if (notificationsEnabled && unreadCount > 0) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -101,7 +107,12 @@ fun AlertsScreen(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                if (notifications.isEmpty()) {
+                if (!notificationsEnabled) {
+                    EmptyState(
+                        title = "Notifications are turned off",
+                        subtitle = "Enable them in Settings to see alerts here"
+                    )
+                } else if (notifications.isEmpty()) {
                     EmptyState(
                         title = "No alerts yet",
                         subtitle = "You'll see booking updates and messages here"
