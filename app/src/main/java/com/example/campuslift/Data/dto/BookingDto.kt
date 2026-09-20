@@ -29,7 +29,7 @@ data class BookingWithTripDto(
     @SerializedName("eventTime") val eventTime: String?,
     @SerializedName("pricePerSeat") val pricePerSeat: Double,
 
-    // NEW: populated on GET /api/bookings/trip/{tripId}, null on GET /api/bookings/mine
+    // populated on GET /api/bookings/trip/{tripId}, null on GET /api/bookings/mine
     @SerializedName("passenger") val passenger: PublicUserSummaryDto?
 )
 

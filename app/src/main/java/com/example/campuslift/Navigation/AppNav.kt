@@ -45,8 +45,11 @@ fun AppNav() {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in bottomNavRoutes) {
-                BottomNavBar(navController = navController)
+            androidx.compose.foundation.layout.Column {
+                com.example.campuslift.Components.ActiveTripBanner()
+                if (currentRoute in bottomNavRoutes) {
+                    BottomNavBar(navController = navController)
+                }
             }
         }
     ) { scaffoldPadding ->

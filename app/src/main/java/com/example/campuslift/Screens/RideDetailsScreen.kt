@@ -320,12 +320,6 @@ fun RideDetailsScreen(
                         }
                     )
 
-                    Text(
-                        text = "Payment held securely until trip is completed",
-                        fontSize = 11.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
                 }
             }
         }

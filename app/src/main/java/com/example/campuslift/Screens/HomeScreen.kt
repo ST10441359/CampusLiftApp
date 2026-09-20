@@ -71,7 +71,7 @@ fun HomeScreen(
         userViewModel.loadMe()
     }
 
-    val otherPeoplesTrips = trips.filter { it.driverId != currentUser?.id }
+    val otherPeoplesTrips = trips.filter { it.driverId != currentUser?.id && it.seatsRemaining > 0 }
 
     Column(
         modifier = Modifier

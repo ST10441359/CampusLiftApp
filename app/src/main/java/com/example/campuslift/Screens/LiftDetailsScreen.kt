@@ -65,6 +65,7 @@ fun LiftDetailsScreen(
     var showCancelBanner by remember { mutableStateOf(false) }
     var approvalBannerMessage by remember { mutableStateOf("") }
     var showApprovalBanner by remember { mutableStateOf(false) }
+    var showCompleteBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(tripId) {
         tripViewModel.loadTrip(tripId)
@@ -73,6 +74,13 @@ fun LiftDetailsScreen(
 
     LaunchedEffect(showCancelBanner) {
         if (showCancelBanner) {
+            delay(1500)
+            onTripCancelled()
+        }
+    }
+
+    LaunchedEffect(showCompleteBanner) {
+        if (showCompleteBanner) {
             delay(1500)
             onTripCancelled()
         }
@@ -95,6 +103,7 @@ fun LiftDetailsScreen(
     } ?: ""
 
     val pendingRequests = tripBookings.filter { it.approval == "pending" }
+    val approvedPassengers = tripBookings.filter { it.approval == "approved" && it.cancellationTime == null }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -218,6 +227,46 @@ fun LiftDetailsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
+                if (approvedPassengers.isNotEmpty() && trip?.isComplete != true) {
+                    Card(
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = "APPROVED PASSENGERS (${approvedPassengers.size})",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            approvedPassengers.forEachIndexed { index, passenger ->
+                                ApprovedPassengerRow(
+                                    passenger = passenger,
+                                    onConfirmPickup = {
+                                        bookingViewModel.confirmPickup(passenger.id) { success ->
+                                            if (success) {
+                                                bookingViewModel.loadForTrip(tripId)
+                                            } else {
+                                                errorMessage = "Failed to confirm pickup."
+                                            }
+                                        }
+                                    }
+                                )
+                                if (index < approvedPassengers.lastIndex) {
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 Card(
                     shape = RoundedCornerShape(14.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -319,7 +368,21 @@ fun LiftDetailsScreen(
 
                 if (trip?.isComplete != true) {
                     CampusLiftButton(
-                        text = "Cancel Trip",
+                        text = "Complete Trip",
+                        onClick = {
+                            tripViewModel.complete(tripId) { success ->
+                                if (success) {
+                                    showCompleteBanner = true
+                                } else {
+                                    errorMessage = "Failed to complete trip. Try again."
+                                }
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedButton(
                         onClick = {
                             tripViewModel.cancel(tripId) { success ->
                                 if (success) {
@@ -328,8 +391,11 @@ fun LiftDetailsScreen(
                                     errorMessage = "Failed to cancel trip. Try again."
                                 }
                             }
-                        }
-                    )
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cancel Trip")
+                    }
                 }
             }
         }
@@ -339,6 +405,16 @@ fun LiftDetailsScreen(
             visible = showCancelBanner,
             isSuccess = false,
             onDismiss = { showCancelBanner = false },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp)
+        )
+
+        PassiveBanner(
+            message = "Trip completed",
+            visible = showCompleteBanner,
+            isSuccess = true,
+            onDismiss = { showCompleteBanner = false },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 8.dp)
@@ -364,10 +440,17 @@ private fun PendingRequestRow(
 ) {
     Column {
         Text(
-            text = "${request.seatsRequested} seat${if (request.seatsRequested == 1) "" else "s"} requested",
+            text = listOfNotNull(request.passenger?.name, request.passenger?.surname)
+                .joinToString(" ")
+                .ifBlank { "Passenger" },
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF1A237E)
+        )
+        Text(
+            text = "${request.seatsRequested} seat${if (request.seatsRequested == 1) "" else "s"} requested",
+            fontSize = 12.sp,
+            color = Color.Gray
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -389,6 +472,54 @@ private fun PendingRequestRow(
                 modifier = Modifier.weight(1f)
             ) {
                 Text("Decline")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ApprovedPassengerRow(
+    passenger: BookingWithTripDto,
+    onConfirmPickup: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = listOfNotNull(passenger.passenger?.name, passenger.passenger?.surname)
+                    .joinToString(" ")
+                    .ifBlank { "Passenger" },
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A237E)
+            )
+            Text(
+                text = "${passenger.seatsRequested} seat${if (passenger.seatsRequested == 1) "" else "s"}",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+
+        if (passenger.pickupConfirmed) {
+            Surface(
+                color = Color(0xFFE8F5E9),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = "✓ Picked up",
+                    fontSize = 12.sp,
+                    color = Color(0xFF2E7D32),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+        } else {
+            Button(
+                onClick = onConfirmPickup,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A237E))
+            ) {
+                Text("Confirm Pickup")
             }
         }
     }
