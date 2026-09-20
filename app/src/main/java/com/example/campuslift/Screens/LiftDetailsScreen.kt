@@ -245,18 +245,7 @@ fun LiftDetailsScreen(
                             Spacer(modifier = Modifier.height(10.dp))
 
                             approvedPassengers.forEachIndexed { index, passenger ->
-                                ApprovedPassengerRow(
-                                    passenger = passenger,
-                                    onConfirmPickup = {
-                                        bookingViewModel.confirmPickup(passenger.id) { success ->
-                                            if (success) {
-                                                bookingViewModel.loadForTrip(tripId)
-                                            } else {
-                                                errorMessage = "Failed to confirm pickup."
-                                            }
-                                        }
-                                    }
-                                )
+                                ApprovedPassengerRow(passenger = passenger)
                                 if (index < approvedPassengers.lastIndex) {
                                     Spacer(modifier = Modifier.height(10.dp))
                                 }
@@ -478,10 +467,7 @@ private fun PendingRequestRow(
 }
 
 @Composable
-private fun ApprovedPassengerRow(
-    passenger: BookingWithTripDto,
-    onConfirmPickup: () -> Unit
-) {
+private fun ApprovedPassengerRow(passenger: BookingWithTripDto) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -515,11 +501,16 @@ private fun ApprovedPassengerRow(
                 )
             }
         } else {
-            Button(
-                onClick = onConfirmPickup,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A237E))
+            Surface(
+                color = Color(0xFFE3F2FD),
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Confirm Pickup")
+                Text(
+                    text = "Awaiting pickup",
+                    fontSize = 12.sp,
+                    color = Color(0xFF1565C0),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                )
             }
         }
     }

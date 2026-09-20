@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,6 +64,7 @@ fun BookingDetailsScreen(
     val trip by tripViewModel.selected.collectAsStateWithLifecycle()
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showBanner by remember { mutableStateOf(false) }
+    var showPickupBanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         bookingViewModel.loadMyBookings()
@@ -76,6 +78,13 @@ fun BookingDetailsScreen(
         if (showBanner) {
             delay(1500)
             onBookingCancelled()
+        }
+    }
+
+    LaunchedEffect(showPickupBanner) {
+        if (showPickupBanner) {
+            delay(1500)
+            showPickupBanner = false
         }
     }
 
@@ -95,15 +104,17 @@ fun BookingDetailsScreen(
         }
     } ?: ""
 
-    val statusText = when (booking?.approval) {
-        "approved" -> "Confirmed"
-        "rejected" -> "Rejected"
+    val statusText = when {
+        booking?.pickupConfirmed == true -> "Pickup Confirmed"
+        booking?.approval == "approved" -> "Confirmed"
+        booking?.approval == "rejected" -> "Rejected"
         else -> "Pending"
     }
 
-    val statusColor = when (booking?.approval) {
-        "approved" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-        "rejected" -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
+    val statusColor = when {
+        booking?.pickupConfirmed == true -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        booking?.approval == "approved" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        booking?.approval == "rejected" -> Color(0xFFFFEBEE) to Color(0xFFD32F2F)
         else -> Color(0xFFFFF3E0) to Color(0xFFE65100)
     }
 
@@ -269,9 +280,24 @@ fun BookingDetailsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (booking?.approval != "rejected" && booking?.cancellationTime == null) {
+                if (booking?.approval == "approved" && booking.pickupConfirmed == false) {
                     CampusLiftButton(
-                        text = "Cancel Booking",
+                        text = "Confirm Pickup",
+                        onClick = {
+                            bookingViewModel.confirmPickup(bookingId) { success ->
+                                if (success) {
+                                    showPickupBanner = true
+                                } else {
+                                    errorMessage = "Failed to confirm pickup."
+                                }
+                            }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                if (booking?.approval != "rejected" && booking?.cancellationTime == null && booking?.pickupConfirmed != true) {
+                    OutlinedButton(
                         onClick = {
                             bookingViewModel.cancelBooking(bookingId) { success ->
                                 if (success) {
@@ -280,8 +306,14 @@ fun BookingDetailsScreen(
                                     errorMessage = "Failed to cancel booking. Try again."
                                 }
                             }
-                        }
-                    )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    ) {
+                        Text("Cancel Booking", fontSize = 16.sp)
+                    }
                 }
             }
         }
@@ -291,6 +323,16 @@ fun BookingDetailsScreen(
             visible = showBanner,
             isSuccess = false,
             onDismiss = { showBanner = false },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp)
+        )
+
+        PassiveBanner(
+            message = "Pickup confirmed",
+            visible = showPickupBanner,
+            isSuccess = true,
+            onDismiss = { showPickupBanner = false },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 8.dp)

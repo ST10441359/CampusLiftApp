@@ -153,9 +153,10 @@ fun BookingCard(
                     else -> Color(0xFFFFF3E0) to Color(0xFFE65100)
                 }
 
-                val statusText = when (booking.approval) {
-                    "approved" -> "Confirmed"
-                    "rejected" -> "Rejected"
+                val statusText = when {
+                    booking.pickupConfirmed -> "Pickup Confirmed"
+                    booking.approval == "approved" -> "Confirmed"
+                    booking.approval == "rejected" -> "Rejected"
                     else -> "Pending"
                 }
 

@@ -40,8 +40,8 @@ private data class ActiveTrip(
 
 @Composable
 fun ActiveTripBanner(
-    tripViewModel: TripViewModel = viewModel(),
-    bookingViewModel: BookingViewModel = viewModel()
+    tripViewModel: TripViewModel = viewModel(key = "activeTripBanner_trips"),
+    bookingViewModel: BookingViewModel = viewModel(key = "activeTripBanner_bookings")
 ) {
     val myTrips by tripViewModel.trips.collectAsStateWithLifecycle()
     val myBookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()

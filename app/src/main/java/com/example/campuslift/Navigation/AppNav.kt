@@ -46,7 +46,9 @@ fun AppNav() {
     Scaffold(
         bottomBar = {
             androidx.compose.foundation.layout.Column {
-                com.example.campuslift.Components.ActiveTripBanner()
+                if (authState is AuthState.Authenticated) {
+                    com.example.campuslift.Components.ActiveTripBanner()
+                }
                 if (currentRoute in bottomNavRoutes) {
                     BottomNavBar(navController = navController)
                 }
