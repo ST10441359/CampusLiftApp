@@ -1,5 +1,7 @@
 package com.example.campuslift.Screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -58,6 +60,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.TimeZone
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -244,6 +247,7 @@ fun HomeScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 private fun formatEventTime(raw: String?): String {
     if (raw == null) return "No time set"
     return try {
@@ -260,6 +264,7 @@ private fun driverInitials(name: String?, surname: String?): String {
     return listOfNotNull(first, last).joinToString("").ifBlank { "?" }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun TripCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
     Card(

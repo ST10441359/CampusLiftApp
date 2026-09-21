@@ -1,11 +1,13 @@
 package com.example.campuslift.ViewModels
 
+import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.campuslift.Auth.AuthRepository
 import com.example.campuslift.Auth.AuthState
+import com.example.campuslift.Auth.GoogleSignInHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -103,7 +105,7 @@ class AuthViewModel(
         viewModelScope.launch {
             val result = repository.signInWithGoogle(idToken)
             result.onFailure { e ->
-                _uiError.value = "Google sign-in failed. Please try again."
+                _uiError.value = "Google sign-in failed. Please try again." + e
                 Log.e(TAG, "Google sign-in error", e)
             }
             _isLoading.value = false
@@ -123,7 +125,7 @@ class AuthViewModel(
                 Log.d(TAG, "Google token obtained, passing to Firebase")
                 val result = repository.signInWithGoogle(idToken)
                 result.onFailure { e ->
-                    _uiError.value = "Google sign-in failed. Please try again."
+                    _uiError.value = "Google sign-in failed. Please try again." + e
                     Log.e(TAG, "Firebase Google sign-in error", e)
                 }
             }.onFailure { e ->
@@ -135,7 +137,7 @@ class AuthViewModel(
                         "No Google accounts found on this device"
                     msg.contains("network", true) ->
                         "Network error. Check your connection"
-                    else -> "Google sign-in failed. Please try again."
+                    else -> "Google sign-in failed. Please try again." + e
                 }
                 Log.e(TAG, "Google sign-in error: ${_uiError.value}")
             }
@@ -147,7 +149,22 @@ class AuthViewModel(
         _uiError.value = null
     }
 
-    fun signOut() = repository.signOut()
+    fun signOut(context: Context) {
+        viewModelScope.launch {
+            try {
+                // Sign out from Firebase
+                repository.signOut()
+
+                // Clear Credential Manager state
+                val helper = GoogleSignInHelper(context)
+                helper.clearCredentialState()
+
+                Log.d(TAG, "Successfully signed out and cleared credential state")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during sign out", e)
+            }
+        }
+    }
 
     suspend fun getIdToken(): String? = repository.getIdToken()
 

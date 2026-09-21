@@ -28,6 +28,7 @@ import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.ui.platform.LocalContext
 
 private val bottomNavRoutes = setOf("home", "myRides", "lifts", "alerts", "settings")
 
@@ -44,6 +45,8 @@ fun AppNav() {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    val context = LocalContext.current
 
     Scaffold(
         bottomBar = {
@@ -87,7 +90,7 @@ fun AppNav() {
             composable("home") {
                 HomeScreen(
                     onSignOut = {
-                        authViewModel.signOut()
+                        authViewModel.signOut(context)
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }
@@ -186,7 +189,7 @@ fun AppNav() {
                     onBack = { navController.popBackStack() },
                     settingsViewModel = viewModel(key = "settings_$currentUid"),
                     onSignOut = {
-                        authViewModel.signOut()
+                        authViewModel.signOut(context)
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }
