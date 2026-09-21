@@ -63,7 +63,8 @@ fun LiftsScreen(
     }
 
     val visibleTrips = trips.filter { trip ->
-        trip.isActive && (if (selectedTab == 0) !trip.isComplete else trip.isComplete)
+        if (selectedTab == 0) trip.isActive && !trip.isComplete
+        else trip.isComplete
     }
 
     Scaffold(

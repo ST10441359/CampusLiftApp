@@ -106,6 +106,7 @@ fun BookingDetailsScreen(
     } ?: ""
 
     val statusText = when {
+        trip?.isComplete == true -> "Completed"
         booking?.pickupConfirmed == true -> "Pickup Confirmed"
         booking?.approval == "approved" -> "Confirmed"
         booking?.approval == "rejected" -> "Rejected"

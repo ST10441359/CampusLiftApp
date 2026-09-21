@@ -155,6 +155,7 @@ fun BookingCard(
                 }
 
                 val statusText = when {
+                    trip?.isComplete == true -> "Completed"
                     booking.pickupConfirmed -> "Pickup Confirmed"
                     booking.approval == "approved" -> "Confirmed"
                     booking.approval == "rejected" -> "Rejected"

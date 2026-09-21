@@ -1,13 +1,11 @@
 package com.example.campuslift.Screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -25,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Components.BookingCard
 import com.example.campuslift.Components.CampusLiftTopBar
 import com.example.campuslift.Components.EmptyState
+import com.example.campuslift.Data.repository.TripRepository
 import com.example.campuslift.ViewModels.BookingViewModel
 
 @Composable
@@ -36,15 +35,33 @@ fun MyBookingsScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val bookings by bookingViewModel.myBookings.collectAsStateWithLifecycle()
 
+    var completedTripIds by remember { mutableStateOf(setOf<String>()) }
+
     LaunchedEffect(Unit) {
         bookingViewModel.loadMyBookings()
+    }
+
+    LaunchedEffect(bookings) {
+        val tripRepo = TripRepository()
+        val ids = mutableSetOf<String>()
+        bookings.forEach { booking ->
+            if (booking.cancellationTime == null && booking.approval != "rejected") {
+                tripRepo.get(booking.tripId).getOrNull()?.let { trip ->
+                    if (trip.isComplete) ids.add(booking.tripId)
+                }
+            }
+        }
+        completedTripIds = ids
     }
 
     val visibleBookings = bookings.filter { booking ->
         if (booking.cancellationTime != null) return@filter false
 
         val isRejected = booking.approval == "rejected"
-        if (selectedTab == 0) !isRejected else isRejected
+        val isCompleted = completedTripIds.contains(booking.tripId)
+
+        if (selectedTab == 0) !isRejected && !isCompleted
+        else isRejected || isCompleted
     }
 
     Scaffold(
@@ -56,7 +73,6 @@ fun MyBookingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
         ) {
             TabRow(selectedTabIndex = selectedTab) {
                 Tab(
