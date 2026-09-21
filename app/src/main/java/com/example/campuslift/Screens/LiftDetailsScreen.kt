@@ -158,9 +158,11 @@ fun LiftDetailsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp)
             ) {
+                val tripInProgress = approvedPassengers.any { it.pickupConfirmed }
+
                 val statusColor = if (trip?.isComplete == true) {
                     Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-                } else if (trip?.seatsRemaining == 0) {
+                } else if (tripInProgress) {
                     Color(0xFFFFF3E0) to Color(0xFFE65100)
                 } else {
                     Color(0xFFE3F2FD) to Color(0xFF1565C0)
@@ -174,7 +176,7 @@ fun LiftDetailsScreen(
                     Text(
                         text = if (trip?.isComplete == true) {
                             "•  Completed"
-                        } else if (trip?.seatsRemaining == 0) {
+                        } else if (tripInProgress) {
                             "•  In Progress"
                         } else {
                             "•  ${trip?.seatsRemaining ?: 0} seats remaining"

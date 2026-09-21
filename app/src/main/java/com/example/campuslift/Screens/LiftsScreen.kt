@@ -137,11 +137,13 @@ private fun formatEventTime(raw: String?): String {
 @Composable
 private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
     var pendingCount by remember(trip.id) { mutableStateOf(0) }
+    var tripInProgress by remember(trip.id) { mutableStateOf(false) }
 
     LaunchedEffect(trip.id) {
         BookingRepository().forTrip(trip.id)
             .onSuccess { bookings ->
                 pendingCount = bookings.count { it.approval == "pending" }
+                tripInProgress = bookings.any { it.approval == "approved" && it.pickupConfirmed }
             }
     }
 
@@ -175,7 +177,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                         text = "You're driving",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1A237E)                  // brand navy kept
+                        color = Color(0xFF1A237E)
                     )
                     Text(
                         text = "${trip.fromLocation} → ${trip.toLocation}",
@@ -204,14 +206,14 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
             if (pendingCount > 0) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
-                    color = Color(0xFFFFF3E0),                     // semantic – kept
+                    color = Color(0xFFFFF3E0),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = "🔔  $pendingCount pending request${if (pendingCount == 1) "" else "s"}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE65100),                 // semantic – kept
+                        color = Color(0xFFE65100),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                     )
                 }
@@ -234,11 +236,11 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.weight(1f))
 
                 val statusColor = if (trip.isComplete) {
-                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)         // semantic – kept
-                } else if (trip.seatsRemaining == 0) {
-                    Color(0xFFFFF3E0) to Color(0xFFE65100)         // semantic – kept
+                    Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+                } else if (tripInProgress) {
+                    Color(0xFFFFF3E0) to Color(0xFFE65100)
                 } else {
-                    Color(0xFFE3F2FD) to Color(0xFF1565C0)         // semantic – kept
+                    Color(0xFFE3F2FD) to Color(0xFF1565C0)
                 }
 
                 Surface(
@@ -248,7 +250,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     Text(
                         text = if (trip.isComplete) {
                             "•  Completed"
-                        } else if (trip.seatsRemaining == 0) {
+                        } else if (tripInProgress) {
                             "•  In Progress"
                         } else {
                             "•  ${trip.seatsRemaining} of ${trip.totalSeats} seats left"
@@ -280,7 +282,7 @@ private fun LiftCard(trip: TripWithAvailabilityDto, onClick: () -> Unit) {
                     text = "R${trip.pricePerSeat}",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A237E)                      // brand navy kept
+                    color = Color(0xFF1A237E)
                 )
             }
         }
