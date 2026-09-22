@@ -6,11 +6,7 @@
 
 <p align="center"><em>Safe. Affordable. Student Rides.</em></p>
 
----
-
 A ride-sharing Android application built exclusively for university students. CampusLift connects verified students who need rides with fellow students who are already driving the same route — making transport cheaper, safer, and more sustainable for campus communities.
-
----
 
 ## Table of Contents
 
@@ -33,23 +29,17 @@ A ride-sharing Android application built exclusively for university students. Ca
 - [Demonstration Video](#demonstration-video)
 - [License](#license)
 
----
-
 ## Overview
 
 CampusLift is a native Android application that enables students to share rides within their campus community. The app requires university email verification to ensure safety and trust, offers a fixed cost-sharing model (no surge pricing), and provides real-time communication between drivers and passengers.
 
 **Target Users:** University students who commute to campus — both those seeking rides and those willing to offer them.
 
----
-
 ## Problem Statement
 
 Access to safe and reliable transportation is a challenge faced by many university students. Current options — expensive taxi services, inefficient public transport, and informal WhatsApp groups — are ineffective and sometimes unsafe.
 
 CampusLift addresses this by providing an authenticated platform where verified university students can provide and request rides within their campus community, making travel cheaper, easier, and safer while also reducing car usage.
-
----
 
 ## Features
 
@@ -71,8 +61,6 @@ CampusLift addresses this by providing an authenticated platform where verified 
 - **Biometric Authentication** — Fingerprint / face unlock
 - **Multi-Language Support** — English and isiZulu
 - **Live Location Sharing** — Share trip details with emergency contacts
-
----
 
 ## Technology Stack
 
@@ -98,8 +86,6 @@ CampusLift addresses this by providing an authenticated platform where verified 
 | Hosting | Cloud-hosted |
 | Authentication | Firebase + custom `X-Firebase-Uid` header |
 
----
-
 ## Architecture
 
 CampusLift follows a client-server architecture with clear separation of concerns:
@@ -123,73 +109,27 @@ External Services:
 
 ### Architecture Diagram
 
-![Architecture Diagram](docs/architecture-diagram.png)
+![Architecture Diagram](architecture-diagram.png)
 
-*The UML system architecture diagram from the Part 1 design document illustrates how the mobile application communicates with the custom REST API, database, and external SDKs.*
-
----
+The UML system architecture diagram from the Part 1 design document illustrates how the mobile application communicates with the custom REST API, database, and external SDKs.
 
 ## Project Structure
 
 ```
 app/src/main/java/com/example/campuslift/
 ├── Auth/                      # Firebase authentication logic
-│   ├── AuthRepository.kt
-│   ├── AuthState.kt
-│   └── GoogleSignInHelper.kt
 ├── Components/                # Reusable UI components
-│   ├── ActiveTripBanner.kt
-│   ├── BookingCard.kt
-│   ├── CampusLiftButton.kt
-│   ├── CampusLiftRideCard.kt
-│   ├── CampusLiftTextField.kt
-│   ├── CampusLiftTopBar.kt
-│   ├── EmptyState.kt
-│   ├── ErrorMessage.kt
-│   ├── LanguageDropdown.kt
-│   ├── LoadingIndicator.kt
-│   ├── PassiveBanner.kt
-│   ├── SettingsClickRow.kt
-│   ├── SettingsToggleRow.kt
-│   └── ValidationUtils.kt
 ├── Data/                      # Data layer
 │   ├── dto/                   # Data Transfer Objects
 │   ├── remote/                # Network layer (Retrofit)
 │   ├── repository/            # Repositories
 │   └── SettingsRepository.kt  # DataStore-based settings storage
 ├── Navigation/                # Navigation graph
-│   ├── AppNav.kt
-│   ├── BottomNavBar.kt
-│   └── BottomNavItem.kt
 ├── Screens/                   # UI Screens
-│   ├── AddVehicleScreen.kt
-│   ├── AlertsScreen.kt
-│   ├── BookingDetailsScreen.kt
-│   ├── CreateRideScreen.kt
-│   ├── HomeScreen.kt
-│   ├── LiftDetailsScreen.kt
-│   ├── LiftsScreen.kt
-│   ├── LoginScreen.kt
-│   ├── MyBookingsScreen.kt
-│   ├── RegisterScreen.kt
-│   ├── RideDetailsScreen.kt
-│   └── SettingsScreen.kt
 ├── ViewModels/                # MVVM ViewModels
-│   ├── AuthViewModel.kt
-│   ├── BookingViewModel.kt
-│   ├── NotificationViewModel.kt
-│   ├── SettingsViewModel.kt
-│   ├── TripViewModel.kt
-│   ├── UserViewModel.kt
-│   └── VehicleViewModel.kt
 ├── ui/theme/                  # Theme & styling
-│   ├── Color.kt
-│   ├── Theme.kt
-│   └── Type.kt
 └── MainActivity.kt            # App entry point
 ```
-
----
 
 ## Setup Instructions
 
@@ -221,9 +161,6 @@ app/src/main/java/com/example/campuslift/
    ```bash
    ./gradlew assembleDebug
    ```
-   Or press Run in Android Studio.
-
----
 
 ## API Endpoints
 
@@ -268,8 +205,6 @@ app/src/main/java/com/example/campuslift/
 | PATCH | `/api/notifications/{id}` | Mark as read |
 | POST | `/api/notifications/mark-all-read` | Mark all read |
 
----
-
 ## Data Models
 
 ### UserDto
@@ -292,30 +227,7 @@ data class UserDto(
 )
 ```
 
-### TripWithAvailabilityDto
-```kotlin
-data class TripWithAvailabilityDto(
-    val id: String,
-    val driverId: String,
-    val vehicleId: String?,
-    val fromLocation: String,
-    val toLocation: String,
-    val eventTime: String?,
-    val pricePerSeat: Double,
-    val totalSeats: Int,
-    val seatsTaken: Int,
-    val seatsRemaining: Int,
-    val description: String?,
-    val isActive: Boolean,
-    val isComplete: Boolean,
-    val driver: PublicUserSummaryDto?,
-    val vehicle: PublicVehicleSummaryDto?
-)
-```
-
 Full models are located in `Data/dto/`.
-
----
 
 ## Screenshots
 
@@ -325,18 +237,9 @@ Full models are located in `Data/dto/`.
 - Home / Search screen
 - Ride Details screen
 - Bookings screen
-- Trip Chat screen
 - Profile / Settings screen (light mode)
 - Profile / Settings screen (dark mode)
 - Alerts / Notifications screen
-
-*Screenshots are saved to `docs/screenshots/` and embedded using:*
-```markdown
-![Settings Light](docs/screenshots/settings-light.png)
-![Settings Dark](docs/screenshots/settings-dark.png)
-```
-
----
 
 ## Testing
 
@@ -345,12 +248,10 @@ The project includes unit tests for reusable logic components, executed automati
 ### Unit Tests
 
 **Validation logic** (`ValidationUtilsTest.kt`):
-- Phone number validation (valid and invalid formats)
-- Email validation (valid and invalid formats)
+- Phone number validation
+- Email validation
 - Required field validation
 - Max length validation
-
-*Additional tests to be added for other components as development progresses.*
 
 ### Running Tests Locally
 
@@ -361,8 +262,6 @@ The project includes unit tests for reusable logic components, executed automati
 ### Automated Testing
 
 Tests run automatically on every push via GitHub Actions. See the [Actions tab](https://github.com/ST10441359/CampusLiftApp/actions) for live results.
-
----
 
 ## Version Control & CI/CD
 
@@ -391,8 +290,6 @@ ci: update CI configuration
 - Jobs performed (build, test, lint)
 - Link to live workflow results
 
----
-
 ## Team & Contributions
 
 **Group: Commit Push & Pray**
@@ -404,55 +301,25 @@ ci: update CI configuration
 | Ziyaad Simjee | ST10406906 | Core Ride Features & Feature UI |
 | Keshvir Parthab | ST10451537 | Settings, Reusable Components, Validation, Tests |
 
+### Suvan Samlall — SSO & API Integration
+
+Suvan led the project as group leader and was responsible for the full authentication and API integration layer. He implemented the Single Sign-On flow using Google Credential Manager with Firebase Authentication, enabling students to sign in with their university Google accounts. He built the Retrofit-based networking layer (`RetrofitClient`, `ApiService`, `AuthInterceptor`) that handles all communication between the Android app and the ASP.NET Core backend, using the `X-Firebase-Uid` header to authenticate requests. Suvan also built the `SyncObserver` in `MainActivity` that automatically syncs the signed-in Firebase user with the Supabase database after login. He set up and coordinated the GitHub repository, branch strategy, and CI/CD workflows.
+
+### Joshua Gerald Chetty — Backend & Database
+
+Joshua was responsible for the ASP.NET Core REST API and Supabase (PostgreSQL) database that power CampusLift. He designed and implemented the full backend architecture including user management, vehicle registration, trip listings, bookings, notifications, and business logic such as seat availability checks and duplicate booking prevention. He created all Data Transfer Objects (`UserDto`, `TripDto`, `BookingDto`, `NotificationDto`, `VehicleDto`, `PublicSummaryDto`) that define the API contract and are consumed by the Android client. Joshua also handled API hosting and tested every endpoint to ensure reliable communication with the mobile app.
+
+### Ziyaad Simjee — Core Ride Features & Feature UI
+
+Ziyaad built the core ride-sharing user experience of CampusLift. He implemented the ride creation screen (`CreateRideScreen`) where drivers post rides with pickup location, destination, date, time, price, and available seats. He built the home search screen (`HomeScreen`) with filtering by date and location, and the ride details screen (`RideDetailsScreen`) where passengers can view driver information, vehicle details, and request seats. He also implemented `MyBookingsScreen`, `LiftDetailsScreen`, `LiftsScreen`, `BookingDetailsScreen`, `AddVehicleScreen`, and `AlertsScreen` — plus the supporting components `BookingCard`, `ActiveTripBanner`, and `PassiveBanner`. Together these screens form the complete ride-sharing workflow: searching, booking, tracking, and completing trips.
+
 ### Keshvir Parthab — Settings, Reusable Components, Validation
 
-**Settings Screen (`SettingsScreen.kt`)**
-- Account overview section displaying user name and email
-- Language dropdown (English / isiZulu)
-- Dark Mode toggle wired to the app's theme
-- Biometric Login toggle
-- Notifications toggle
-- Editable default pickup, emergency contact and vehicle fields
-- Save button with Toast confirmation
-- Sign Out integration
+Keshvir built the Settings/Profile screen with per-user preferences, and created the reusable UI component library used across all screens. His work includes the account overview section, language dropdown (English / isiZulu), Dark Mode toggle wired to the app theme, Biometric Login toggle, Notifications toggle, editable default pickup and emergency contact fields, and Save button with Toast confirmation. He implemented per-user settings persistence using Android DataStore, with all preferences keyed by Firebase UID so each user has their own settings. He created 14 reusable components in the `Components/` package used by every screen in the app, and the `ValidationUtils` helper class for form validation.
 
-**Reusable UI Components (14 total, in `Components/`)**
-- `CampusLiftButton` — primary orange action button
-- `CampusLiftTextField` — input with inline error support
-- `CampusLiftRideCard` — ride listing card
-- `CampusLiftTopBar` — consistent header with back arrow
-- `LoadingIndicator` — centered spinner
-- `ErrorMessage` — error box
-- `EmptyState` — empty list placeholder
-- `SettingsClickRow` — tappable settings row
-- `SettingsToggleRow` — toggle switch row
-- `LanguageDropdown` — dropdown for language selection
-- `BookingCard` — booking listing card
-- `ActiveTripBanner` — banner shown during active trips
-- `PassiveBanner` — auto-dismissing notification banner
-- `ValidationUtils` — reusable validation helpers
+### Shared Contributions
 
-**Data Persistence (`SettingsRepository.kt`, `SettingsViewModel.kt`)**
-- Per-user settings storage using Android DataStore
-- All preferences keyed by Firebase UID
-- Automatic sync when user changes accounts
-- Persists across app restarts
-
-**Theme Switching (`MainActivity.kt`)**
-- Dynamic dark/light theme driven by user preference
-- Combined with Suvan's `SyncObserver` for post-login sync
-
-**Validation (`ValidationUtils.kt`)**
-- Phone number validation
-- Email validation
-- Required field validation
-- Max length validation
-
-**Logging**
-- Android Log statements throughout the Settings flow
-- Enables debugging of user actions in Logcat
-
----
+All team members contributed to the UI design consistency across the app and to the testing of features on physical devices. Suvan, Joshua, Ziyaad, and Keshvir all participated in the competitive research, design planning (Part 1), and prototype testing phases of the project.
 
 ## Acknowledgements
 
@@ -468,10 +335,6 @@ CampusLift was built using the following open-source libraries and public docume
 - **Supabase** — PostgreSQL database hosting
 - **Gson** — JSON serialization by Google
 
-Full references listed in the References section.
-
----
-
 ## AI Usage Declaration
 
 Generative AI tools (ChatGPT, Google Gemini) were used during development of CampusLift for:
@@ -481,8 +344,6 @@ Generative AI tools (ChatGPT, Google Gemini) were used during development of Cam
 - Documentation drafting and refinement
 
 All AI-generated content was reviewed, adapted, and integrated by team members. Any code snippets or patterns adapted from external sources are referenced in the References section.
-
----
 
 ## References
 
@@ -494,61 +355,45 @@ The following resources were consulted and used during the development of Campus
 
 [2] Android Developers, "Guide to app architecture - MVVM," [Online]. Available: https://developer.android.com/topic/architecture. [Accessed: Sep. 2026].
 
-[3] Android Developers, "Save data in a local database using Room," [Online]. Available: https://developer.android.com/training/data-storage/room. [Accessed: Sep. 2026].
+[3] Android Developers, "DataStore," [Online]. Available: https://developer.android.com/topic/libraries/architecture/datastore. [Accessed: Sep. 2026].
 
-[4] Android Developers, "DataStore," [Online]. Available: https://developer.android.com/topic/libraries/architecture/datastore. [Accessed: Sep. 2026].
+[4] Android Developers, "Biometric authentication," [Online]. Available: https://developer.android.com/training/sign-in/biometric-auth. [Accessed: Sep. 2026].
 
-[5] Android Developers, "Biometric authentication," [Online]. Available: https://developer.android.com/training/sign-in/biometric-auth. [Accessed: Sep. 2026].
+[5] Android Developers, "Navigation Compose," [Online]. Available: https://developer.android.com/develop/ui/compose/navigation. [Accessed: Sep. 2026].
 
-[6] Android Developers, "Navigation Compose," [Online]. Available: https://developer.android.com/develop/ui/compose/navigation. [Accessed: Sep. 2026].
-
-[7] Android Developers, "Material 3 in Compose," [Online]. Available: https://developer.android.com/develop/ui/compose/designsystems/material3. [Accessed: Sep. 2026].
-
-[8] Android Developers, "Navigation Bar in Compose," [Online]. Available: https://developer.android.com/develop/ui/compose/components/navigation-bar. [Accessed: Sep. 2026].
+[6] Android Developers, "Material 3 in Compose," [Online]. Available: https://developer.android.com/develop/ui/compose/designsystems/material3. [Accessed: Sep. 2026].
 
 ### Firebase
 
-[9] Firebase, "Firebase Authentication for Android," [Online]. Available: https://firebase.google.com/docs/auth/android/start. [Accessed: Sep. 2026].
+[7] Firebase, "Firebase Authentication for Android," [Online]. Available: https://firebase.google.com/docs/auth/android/start. [Accessed: Sep. 2026].
 
-[10] Firebase, "Firebase Cloud Messaging," [Online]. Available: https://firebase.google.com/docs/cloud-messaging. [Accessed: Sep. 2026].
+[8] Firebase, "Firebase Cloud Messaging," [Online]. Available: https://firebase.google.com/docs/cloud-messaging. [Accessed: Sep. 2026].
 
-[11] Google, "Sign in with Google for Android using Credential Manager," [Online]. Available: https://developer.android.com/identity/sign-in/credential-manager-siwg. [Accessed: Sep. 2026].
+[9] Google, "Sign in with Google for Android using Credential Manager," [Online]. Available: https://developer.android.com/identity/sign-in/credential-manager-siwg. [Accessed: Sep. 2026].
 
 ### Networking & Data
 
-[12] Square, "Retrofit - A type-safe HTTP client for Android," [Online]. Available: https://square.github.io/retrofit/. [Accessed: Sep. 2026].
+[10] Square, "Retrofit - A type-safe HTTP client for Android," [Online]. Available: https://square.github.io/retrofit/. [Accessed: Sep. 2026].
 
-[13] Square, "OkHttp," [Online]. Available: https://square.github.io/okhttp/. [Accessed: Sep. 2026].
+[11] Square, "OkHttp," [Online]. Available: https://square.github.io/okhttp/. [Accessed: Sep. 2026].
 
-[14] Square, "OkHttp Interceptors," [Online]. Available: https://square.github.io/okhttp/features/interceptors/. [Accessed: Sep. 2026].
-
-[15] Google, "Gson," [Online]. Available: https://github.com/google/gson. [Accessed: Sep. 2026].
+[12] Google, "Gson," [Online]. Available: https://github.com/google/gson. [Accessed: Sep. 2026].
 
 ### Backend
 
-[16] Microsoft, "ASP.NET Core Web API Documentation," [Online]. Available: https://learn.microsoft.com/en-us/aspnet/core/web-api/. [Accessed: Sep. 2026].
+[13] Microsoft, "ASP.NET Core Web API Documentation," [Online]. Available: https://learn.microsoft.com/en-us/aspnet/core/web-api/. [Accessed: Sep. 2026].
 
-[17] Supabase, "Supabase Documentation," [Online]. Available: https://supabase.com/docs. [Accessed: Sep. 2026].
-
-### Maps & Location
-
-[18] Google, "Maps SDK for Android," [Online]. Available: https://developers.google.com/maps/documentation/android-sdk. [Accessed: Sep. 2026].
-
-### Design
-
-[19] Material Design 3, "Material Design Guidelines," [Online]. Available: https://m3.material.io/. [Accessed: Sep. 2026].
+[14] Supabase, "Supabase Documentation," [Online]. Available: https://supabase.com/docs. [Accessed: Sep. 2026].
 
 ### Tools & DevOps
 
-[20] GitHub, "GitHub Actions Documentation," [Online]. Available: https://docs.github.com/en/actions. [Accessed: Sep. 2026].
+[15] GitHub, "GitHub Actions Documentation," [Online]. Available: https://docs.github.com/en/actions. [Accessed: Sep. 2026].
 
-[21] JetBrains, "Kotlin Documentation," [Online]. Available: https://kotlinlang.org/docs/. [Accessed: Sep. 2026].
-
----
+[16] JetBrains, "Kotlin Documentation," [Online]. Available: https://kotlinlang.org/docs/. [Accessed: Sep. 2026].
 
 ## Demonstration Video
 
-Video link:
+**Video link:** *To be added - unlisted YouTube URL.*
 
 The demonstration video will cover:
 - SSO registration and login
@@ -558,10 +403,8 @@ The demonstration video will cover:
 - Core user-defined features
 - Live demonstration on a physical Android device
 
----
-
 ## License
 
 This project is developed as part of the IIE Bachelor of Computer and Information Sciences module PROG7314 - Programming 3D. It is for academic purposes only.
 
----
+*Last updated: September 2026*
