@@ -14,8 +14,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.campuslift.Auth.AuthState
+import com.example.campuslift.Auth.GoogleSignInHelper
 import com.example.campuslift.ViewModels.AuthViewModel
 
+/**
+ * Login screen with email/password and Google SSO.
+ *
+ * The GoogleSignInHelper is constructed with LocalContext.current (an Activity
+ * context in Compose) — Credential Manager requires an Activity context for
+ * the account picker to render. It's remembered so the same CredentialManager
+ * instance is reused across recompositions and button taps.
+ */
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
@@ -25,6 +34,9 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
+
+    // Constructed once per screen lifetime — required for Credential Manager.
+    val googleHelper = remember { GoogleSignInHelper(context) }
 
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val error by viewModel.uiError.collectAsStateWithLifecycle()
@@ -59,7 +71,7 @@ fun LoginScreen(
 
         // ---------- GOOGLE SSO BUTTON ----------
         OutlinedButton(
-            onClick = { viewModel.signInWithGoogle(context) },
+            onClick = { viewModel.signInWithGoogle(googleHelper) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
@@ -73,7 +85,6 @@ fun LoginScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        // Divider with "OR"
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -88,7 +99,6 @@ fun LoginScreen(
         }
 
         Spacer(Modifier.height(16.dp))
-        // --------------------------------------
 
         OutlinedTextField(
             value = email,
