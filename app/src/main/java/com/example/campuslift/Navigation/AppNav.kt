@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.campuslift.Auth.AuthState
+import com.example.campuslift.Auth.GoogleSignInHelper
 import com.example.campuslift.Components.ActiveTripBanner
 import com.example.campuslift.Screens.AddVehicleScreen
 import com.example.campuslift.Screens.AlertsScreen
@@ -30,6 +31,7 @@ import com.example.campuslift.Screens.RideDetailsScreen
 import com.example.campuslift.Screens.SettingsScreen
 import com.example.campuslift.ViewModels.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
 private val bottomNavRoutes = setOf("home", "myRides", "lifts", "alerts", "settings")
@@ -50,6 +52,10 @@ fun AppNav() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val context = LocalContext.current
+
+    // Single helper instance reused for every sign-out across the app.
+    // MUST be Activity context — LocalContext.current provides that in Compose.
+    val googleHelper = remember { GoogleSignInHelper(context) }
 
     Scaffold(
         bottomBar = {
@@ -93,7 +99,7 @@ fun AppNav() {
             composable("home") {
                 HomeScreen(
                     onSignOut = {
-                        authViewModel.signOut(context)
+                        authViewModel.signOut(googleHelper)
                         navController.navigate("login") {
                             popUpTo("home") { inclusive = true }
                         }
@@ -188,15 +194,11 @@ fun AppNav() {
             composable("settings") {
                 val auth = FirebaseAuth.getInstance()
                 val currentUid = auth.currentUser?.uid ?: "guest"
+                // No onSignOut parameter — SettingsScreen now owns sign-out
+                // via its internal AuthViewModel + GoogleSignInHelper.
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
-                    settingsViewModel = viewModel(key = "settings_$currentUid"),
-                    onSignOut = {
-                        authViewModel.signOut(context)
-                        navController.navigate("login") {
-                            popUpTo("home") { inclusive = true }
-                        }
-                    }
+                    settingsViewModel = viewModel(key = "settings_$currentUid")
                 )
             }
         }

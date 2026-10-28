@@ -14,8 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel that mediates between the auth UI and the AuthRepository.
- * Handles validation, error messages, and loading state.
+ * Mediates between the auth UI and AuthRepository.
+ *
+ * Note on Google sign-in context:
+ *   GoogleSignInHelper MUST be constructed with an Activity context for the
+ *   Credential Manager picker to render. We therefore accept a helper instance
+ *   from the caller (the Compose screen, using LocalContext.current) rather than
+ *   reconstructing one here from an application context.
  */
 class AuthViewModel(
     private val repository: AuthRepository = AuthRepository()
@@ -33,7 +38,6 @@ class AuthViewModel(
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     init {
-        // Mirror repository state into our StateFlow
         viewModelScope.launch {
             repository.authState.collect { state ->
                 _authState.value = state
@@ -41,7 +45,8 @@ class AuthViewModel(
         }
     }
 
-    /** Sign in with validation and friendly error mapping. */
+    // ---- Email / password ----
+
     fun signIn(email: String, password: String) {
         if (!validateEmailAndPassword(email, password)) return
 
@@ -59,10 +64,13 @@ class AuthViewModel(
         }
     }
 
-    /** Register with full validation. */
-    /** Register with full validation. */
-    /** Register with full validation. */
-    fun register(name: String, surname: String, email: String, password: String, confirmPassword: String) {
+    fun register(
+        name: String,
+        surname: String,
+        email: String,
+        password: String,
+        confirmPassword: String
+    ) {
         if (!validateEmailAndPassword(email, password)) return
 
         if (name.isBlank()) {
@@ -97,76 +105,84 @@ class AuthViewModel(
         }
     }
 
-    /** Google sign-in using the ID token from Credential Manager. */
-    fun signInWithGoogle(idToken: String) {
-        _isLoading.value = true
-        _uiError.value = null
+    // ---- Google ----
 
-        viewModelScope.launch {
-            val result = repository.signInWithGoogle(idToken)
-            result.onFailure { e ->
-                _uiError.value = "Google sign-in failed. Please try again." + e
-                Log.e(TAG, "Google sign-in error", e)
-            }
-            _isLoading.value = false
-        }
-    }
-    /** Complete Google Sign-In flow: Credential Manager → Firebase. */
-    fun signInWithGoogle(context: android.content.Context) {
+    /**
+     * Full Google SSO flow: Credential Manager → Firebase.
+     *
+     * The [helper] must be constructed with an Activity context by the caller.
+     * Handles the sealed SignInResult:
+     *   - Success   → pass idToken to Firebase
+     *   - Cancelled → friendly snackbar, not an error
+     *   - Failure   → map to a user-facing message
+     */
+    fun signInWithGoogle(helper: GoogleSignInHelper) {
         _isLoading.value = true
         _uiError.value = null
 
         viewModelScope.launch {
             Log.d(TAG, "Google sign-in flow started")
-            val helper = com.example.campuslift.Auth.GoogleSignInHelper(context)
-            val tokenResult = helper.signIn()
+            when (val result = helper.signIn()) {
+                is GoogleSignInHelper.SignInResult.Success -> {
+                    Log.d(TAG, "Google token obtained, passing to Firebase")
+                    val fbResult = repository.signInWithGoogle(result.idToken)
+                    fbResult.onFailure { e ->
+                        _uiError.value = "Google sign-in failed. Please try again."
+                        Log.e(TAG, "Firebase Google sign-in error", e)
+                    }
+                }
 
-            tokenResult.onSuccess { idToken ->
-                Log.d(TAG, "Google token obtained, passing to Firebase")
-                val result = repository.signInWithGoogle(idToken)
-                result.onFailure { e ->
-                    _uiError.value = "Google sign-in failed. Please try again." + e
-                    Log.e(TAG, "Firebase Google sign-in error", e)
+                is GoogleSignInHelper.SignInResult.Cancelled -> {
+                    // User dismissed the picker — show friendly message, no crash.
+                    _uiError.value = "Sign-in cancelled"
+                    Log.d(TAG, "User cancelled Google sign-in")
                 }
-            }.onFailure { e ->
-                // User cancelled or error occurred
-                val msg = e.message ?: ""
-                _uiError.value = when {
-                    msg.contains("cancel", true) -> null // Silent for user cancellation
-                    msg.contains("no credentials", true) ->
-                        "No Google accounts found on this device"
-                    msg.contains("network", true) ->
-                        "Network error. Check your connection"
-                    else -> "Google sign-in failed. Please try again." + e
+
+                is GoogleSignInHelper.SignInResult.Failure -> {
+                    _uiError.value = mapGoogleError(result.exception)
+                    Log.e(TAG, "Google sign-in error", result.exception)
                 }
-                Log.e(TAG, "Google sign-in error: ${_uiError.value}")
             }
-
             _isLoading.value = false
         }
     }
+
     fun clearError() {
         _uiError.value = null
     }
 
-    fun signOut(context: Context) {
+    // ---- Sign out ----
+
+    /**
+     * Signs out of Firebase AND clears Credential Manager state.
+     *
+     * The [helper] is the same instance passed to signInWithGoogle — reusing it
+     * avoids reconstructing CredentialManager (cheap, but unnecessary) and keeps
+     * the Activity context consistent.
+     */
+    fun signOut(helper: GoogleSignInHelper) {
         viewModelScope.launch {
             try {
-                // Sign out from Firebase
-                repository.signOut()
-
-                // Clear Credential Manager state
-                val helper = GoogleSignInHelper(context)
+                // 1. Clear Credential Manager state first.
+                //    Doing this BEFORE Firebase signOut prevents the race where
+                //    authState flips to Unauthenticated and triggers a re-login
+                //    attempt while the stale grant is still cached.
                 helper.clearCredentialState()
+
+                // 2. Firebase signOut.
+                repository.signOut()
 
                 Log.d(TAG, "Successfully signed out and cleared credential state")
             } catch (e: Exception) {
                 Log.e(TAG, "Error during sign out", e)
+                // Don't surface this to the user — sign-out is best-effort.
             }
         }
     }
 
     suspend fun getIdToken(): String? = repository.getIdToken()
+
+    suspend fun getFreshIdToken(): String? = repository.getFreshIdToken()
 
     // ---- helpers ----
 
@@ -190,7 +206,6 @@ class AuthViewModel(
         return true
     }
 
-    /** Converts Firebase error strings into user-friendly messages. */
     private fun mapAuthError(raw: String?): String = when {
         raw == null -> "Something went wrong. Please try again."
         raw.contains("password is invalid", true) ||
@@ -200,5 +215,28 @@ class AuthViewModel(
         raw.contains("network", true) -> "Network error. Check your connection"
         raw.contains("badly formatted", true) -> "Please enter a valid email address"
         else -> "Authentication failed. Please try again."
+    }
+
+    /**
+     * Maps the Credential Manager failure to a user-facing message.
+     * Cancellation is already handled separately; this only covers real errors.
+     */
+    private fun mapGoogleError(e: Throwable): String {
+        val msg = e.message ?: ""
+        return when {
+            msg.contains("no credentials", true) ||
+                    e is androidx.credentials.exceptions.NoCredentialException ->
+                "No Google accounts found on this device"
+
+            msg.contains("network", true) ->
+                "Network error. Check your connection"
+
+            msg.contains("developer", true) ||
+                    msg.contains("10:", true) ->
+                // Common misconfiguration: wrong web client ID or missing SHA-1
+                "Google sign-in is misconfigured. Contact support."
+
+            else -> "Google sign-in failed. Please try again."
+        }
     }
 }

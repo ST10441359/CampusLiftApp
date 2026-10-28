@@ -17,6 +17,12 @@ import com.example.campuslift.Auth.AuthState
 import com.example.campuslift.ViewModels.AuthViewModel
 import com.example.campuslift.ViewModels.UserViewModel
 
+/**
+ * Registration screen (email/password only).
+ *
+ * Unaffected by the Google SSO changes — registration uses a separate
+ * FirebaseAuth path that doesn't touch Credential Manager.
+ */
 @Composable
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
@@ -36,6 +42,10 @@ fun RegisterScreen(
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Authenticated) {
+            // NOTE: syncAfterLogin's failure path is not surfaced here today.
+            // If the backend sync fails, the user sees the loading spinner stop
+            // but stays on this screen with no feedback. Consider adding an
+            // onError callback to syncAfterLogin if this matters.
             userViewModel.syncAfterLogin(overrideName = name, overrideSurname = surname) {
                 onRegisterSuccess()
             }

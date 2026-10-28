@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.campuslift.Auth.GoogleSignInHelper
 import com.example.campuslift.Components.CampusLiftButton
 import com.example.campuslift.Components.CampusLiftTextField
 import com.example.campuslift.Components.CampusLiftTopBar
@@ -32,19 +35,34 @@ import com.example.campuslift.Components.SettingsClickRow
 import com.example.campuslift.Components.SettingsToggleRow
 import com.example.campuslift.Components.ValidationUtils
 import com.example.campuslift.Data.dto.UpdateVehicleRequest
+import com.example.campuslift.ViewModels.AuthViewModel
 import com.example.campuslift.ViewModels.SettingsViewModel
 import com.example.campuslift.ViewModels.UserViewModel
 import com.example.campuslift.ViewModels.VehicleViewModel
 
+/**
+ * Profile / Settings screen.
+ *
+ * Sign-out goes through AuthViewModel.signOut(helper), which:
+ *   1. Clears Credential Manager state (prevents stale grants — fixes the
+ *      intermittent "No credentials" error after sign-out)
+ *   2. Signs out of Firebase
+ *
+ * The helper is constructed from LocalContext.current (Activity context) and
+ * remembered for the screen lifetime — Credential Manager requires it.
+ */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit = {},
-    onSignOut: () -> Unit = {},
     settingsViewModel: SettingsViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel(),
-    vehicleViewModel: VehicleViewModel = viewModel()
+    vehicleViewModel: VehicleViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel()
 ) {
     val context = LocalContext.current
+
+    // Required for Credential Manager — must use Activity context.
+    val googleHelper = remember { GoogleSignInHelper(context) }
 
     val currentUser by userViewModel.user.collectAsStateWithLifecycle()
     val vehicles by vehicleViewModel.vehicles.collectAsStateWithLifecycle()
@@ -89,6 +107,7 @@ fun SettingsScreen(
     }
 
     var vehicleError by remember { mutableStateOf<String?>(null) }
+    var isSigningOut by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -293,10 +312,27 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            CampusLiftButton(
-                text = "Sign Out",
-                onClick = onSignOut
-            )
+            // Sign Out — disabled during async cleanup to prevent double-taps.
+            // AuthViewModel.signOut(googleHelper) is fire-and-forget on its own
+            // viewModelScope, so no local coroutine scope is needed here.
+            // The authState flow will emit Unauthenticated when Firebase is done,
+            // and AppNav's startDestination logic (or your nav host) handles the
+            // transition back to the login screen.
+            if (isSigningOut) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(vertical = 12.dp)
+                        .size(24.dp)
+                )
+            } else {
+                CampusLiftButton(
+                    text = "Sign Out",
+                    onClick = {
+                        isSigningOut = true
+                        authViewModel.signOut(googleHelper)
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
